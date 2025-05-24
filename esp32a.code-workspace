@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "esp32a"
+		},
+		{
+			"name": "ESP32_Main",
+			"path": "Projects/ESP32_Main"
+		},
+		{
+			"name": "ESP32_CAM",
+			"path": "Projects/ESP32_CAM"
+		}
+	],
+	"settings": {}
+}
