@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  ai-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+      # Add your custom environment variables here
+      # - API_SESSION_TIMEOUT=3600
+      # - MAX_IMAGE_SIZE=5242880
+    volumes:
+      - ./ai-server/uploads:/app/uploads
+      - ./ai-server/ai-server/models:/app/ai-server/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - caresynvision-network
+
+networks:
+  caresynvision-network:
+    driver: bridge

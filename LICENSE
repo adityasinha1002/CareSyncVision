@@ -1,0 +1,72 @@
+MIT License
+
+Copyright (c) 2026 CareSyncVision Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Additional License Information
+
+This project uses several open-source libraries and frameworks, each with their own licenses:
+
+### Backend
+- Flask (BSD 3-Clause License)
+- SQLAlchemy (MIT License)
+- Flask-CORS (BSD 3-Clause License)
+- psycopg2 (LGPL with exceptions)
+- PyJWT (MIT License)
+- Werkzeug (BSD 3-Clause License)
+- Gunicorn (MIT License)
+
+### Frontend
+- React (MIT License)
+- Vite (MIT License)
+- Axios (MIT License)
+- Recharts (MIT License)
+- Zustand (MIT License)
+- React Router (MIT License)
+
+### Infrastructure
+- PostgreSQL (PostgreSQL License)
+- Redis (Redis Source Available License)
+- NGINX (BSD 2-Clause License)
+- Docker (Apache 2.0 License)
+
+For detailed license information, see the respective projects' repositories.
+
+## Contributing
+
+By contributing to CareSyncVision, you agree to license your contributions under the same MIT License.
+
+## Third-Party Notices
+
+For a complete list of third-party licenses, run:
+
+**Python:**
+```bash
+pip install pip-licenses
+pip-licenses --format=plain
+```
+
+**Node.js:**
+```bash
+npm install -g license-report
+license-report --output=csv
+```

@@ -1,53 +1,154 @@
-# CareSyncVision - Quick Start Guide
+# CareSyncVision MVP - Quick Start Guide
 
-## Prerequisites
+## ✅ System Status
 
-- **ESP32 Development Board** (for main controller)
-- **ESP32-CAM MB Board** (for camera module)
-- **Linux/macOS/Windows with Python 3.8+**
-- **PlatformIO** installed in VS Code
-- **Arduino IDE** (optional alternative to PlatformIO)
+All services running and tested:
+- ✅ NGINX Reverse Proxy (HTTPS/443)
+- ✅ Flask REST API (Authenticated)
+- ✅ PostgreSQL Database (Persistent)
+- ✅ React Dashboard (Real-time)
+- ✅ Redis Cache (Ready)
 
-## 5-Minute Setup
+## 🚀 Access the Application
 
-### Step 1: Configure WiFi & Server (2 min)
-
-Edit `ESP32_CAM/src/main.cpp`:
-```cpp
-const char* WIFI_SSID = "your-wifi-name";
-const char* WIFI_PASSWORD = "your-wifi-password";
-const char* SERVER_URL = "http://your-server-ip:5000";
+### Option 1: Web Browser (Easiest)
+```
+1. Open: https://localhost
+2. Accept self-signed certificate warning
+3. Login with demo credentials:
+   - Patient ID: 4d8a9d39-ed16-4a74-a49d-b425cd3d7dda
+   - Password: password
+4. View Jane Smith's dashboard
 ```
 
-### Step 2: Upload to ESP32 Boards (2 min)
-
-**Upload ESP32-CAM MB**:
+### Option 2: API Testing (curl)
 ```bash
-cd ESP32_CAM
-# In VS Code PlatformIO: Click Upload to esp32cam environment
+# Login and get JWT token
+TOKEN=$(curl -sk -X POST https://localhost/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"patient_id":"4d8a9d39-ed16-4a74-a49d-b425cd3d7dda","password":"password"}' \
+  | jq -r '.token')
+
+# Test protected endpoint
+curl -sk -X GET https://localhost/api/patient/4d8a9d39-ed16-4a74-a49d-b425cd3d7dda \
+  -H "Authorization: Bearer $TOKEN" | jq '.'
 ```
 
-**Upload ESP32 Main**:
+## 📊 Dashboard Features
+
+### Real Data Displayed
+✅ Patient Info - Name, age, medical conditions  
+✅ Health Summary - 4-card status panel with key metrics  
+✅ Risk Score Trend - 7-day chart with visualization  
+✅ Medication Tracker - Interactive dose logging  
+✅ Alert Panel - Risk-based alerts (auto-generated)
+
+### What You Can Do
+- View patient health overview
+- Submit vital signs (HR, SpO2, Temp, BP)
+- Track medication adherence
+- Monitor risk score trends
+- See generated health alerts
+- Auto-logout on token expiration
+
+## 🔌 Container Management
+
+### View Logs
 ```bash
-cd ESP32_Main
-# In VS Code PlatformIO: Click Upload to esp32dev environment
+docker logs caresynvision-backend -f   # Backend API logs
+docker logs caresynvision-frontend -f  # Frontend/NGINX logs
+docker logs caresynvision-db -f        # Database logs
 ```
 
-### Step 3: Start AI Server (1 min)
-
+### Restart Services
 ```bash
-# Make script executable
-chmod +x start-server.sh
-
-# Run startup script
-./start-server.sh
-
-# Server will start on http://0.0.0.0:5000
+docker-compose -f docker-compose.new.yml restart
 ```
 
-## Verify Installation
+### Stop All
+```bash
+docker-compose -f docker-compose.new.yml down
+```
 
-### 1. Check ESP32-CAM
+### Start All
+```bash
+docker-compose -f docker-compose.new.yml up -d
+```
+
+## 🗄️ Database Access
+
+### Connect to Database
+```bash
+docker exec -it caresynvision-db psql -U caresynvision -d caresynvision
+```
+
+### Useful Queries
+```sql
+-- View all patients
+SELECT patient_id, name, age FROM patients;
+
+-- View medications for demo patient
+SELECT medication_name, dosage, adherence_status 
+FROM medications 
+WHERE patient_id = '4d8a9d39-ed16-4a74-a49d-b425cd3d7dda';
+
+-- View health records
+SELECT timestamp, risk_score 
+FROM health_records 
+WHERE patient_id = '4d8a9d39-ed16-4a74-a49d-b425cd3d7dda' 
+ORDER BY timestamp DESC LIMIT 5;
+```
+
+## 📚 API Endpoints (All 12 Implemented)
+
+### Authentication
+- `POST /api/auth/login` - Get JWT token
+- `GET /api/auth/verify` - Verify token
+- `POST /api/auth/logout` - Logout
+
+### Patient Management
+- `POST /api/patient` - Create patient
+- `GET /api/patient/:id` - Get patient details
+- `PUT /api/patient/:id` - Update patient
+- `GET /api/patient` - List patients
+- `POST /api/patient/:id/vitals` - Submit vitals
+- `GET /api/patient/:id/history` - Get health history
+
+### Medication Management
+- `POST /api/medication` - Create medication
+- `GET /api/patient/:id/medication` - Get schedule
+- `POST /api/patient/:id/medication/log` - Log dose taken
+- `GET /api/patient/:id/medication/adherence` - Get adherence %
+- `GET /api/patient/:id/medication/missed` - Check missed doses
+
+## 🏗️ Architecture
+
+```
+Browser (HTTPS/443)
+    ↓
+NGINX Reverse Proxy
+    ↓
+├─→ Frontend (React) → API calls to backend
+└─→ Backend (Flask)
+    ↓
+PostgreSQL Database
+    ↓
+├─ Patients table
+├─ Medications table
+├─ HealthRecords table
+├─ Alerts table
+└─ Sessions table
+```
+
+## ⚡ Test Patient Data
+
+**Name:** Jane Smith  
+**ID:** 4d8a9d39-ed16-4a74-a49d-b425cd3d7dda  
+**Age:** 68  
+**Conditions:** Hypertension, Heart Disease  
+**Risk Score:** 25 (Normal - Green)  
+**Medication:** Lisinopril 10mg (100% adherent)  
+**Last Vitals:** HR 78, SpO2 98%, Temp 37.1°C, BP 120/80
 - Open serial monitor: 115200 baud
 - Should see: `[STARTUP] ESP32-CAM MB Board Initializing...`
 - LED on GPIO4 should blink when capturing

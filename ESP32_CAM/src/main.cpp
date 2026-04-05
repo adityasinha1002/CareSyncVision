@@ -3,6 +3,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include "esp32_config.h"
 
 // ==============================================================================
 // CARESYNVISION - ESP32-CAM MB BOARD MODULE
@@ -10,10 +11,9 @@
 // Purpose: Capture patient vital signs, movement, and behavioral data
 // ==============================================================================
 
-// WiFi Configuration
-const char* WIFI_SSID = "your-SSID";
-const char* WIFI_PASSWORD = "your-PASSWORD";
-const char* SERVER_URL = "http://your-server-ip:5000";
+// WiFi Configuration (Loaded from EEPROM via ConfigManager)
+ConfigManager configManager;  // Global config instance
+bool needsProvisioning = false;
 
 // Timing Configuration
 const unsigned long CAPTURE_INTERVAL = 30000;  // Capture every 30 seconds for health monitoring
@@ -97,6 +97,9 @@ void setup() {
   // UART communication with ESP32 Main
   Serial1.begin(115200, SERIAL_8N1, 3, 1);
   
+  // Print current configuration
+  configManager.printConfig();
+  
   logEvent("STARTUP", "Device Ready - Waiting for Patient Authentication");
   currentState = STATE_UNAUTHENTICATED;
 }
@@ -176,9 +179,18 @@ void initializeCamera() {
 }
 
 void initializeWiFi() {
-  logEvent("WIFI_INIT", "Connecting to WiFi...");
+  // Check if provisioning is needed
+  if (!configManager.isConfigured()) {
+    logEvent("WIFI_INIT", "WiFi not provisioned. Awaiting configuration via Serial.");
+    logEvent("WIFI_INFO", "Send: CONFIG:{\"ssid\":\"YourSSID\",\"password\":\"YourPassword\",\"server\":\"http://192.168.1.1:5000\"}");
+    needsProvisioning = true;
+    currentState = STATE_IDLE;  // Wait for provisioning
+    return;
+  }
+
+  logEvent("WIFI_INIT", "Connecting to WiFi: " + String(configManager.getSSID()));
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(configManager.getSSID(), configManager.getPassword());
 
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED && attempts < 20) {
@@ -189,6 +201,7 @@ void initializeWiFi() {
 
   if (WiFi.status() == WL_CONNECTED) {
     logEvent("WIFI_CONNECTED", "IP: " + WiFi.localIP().toString());
+    needsProvisioning = false;
   } else {
     logEvent("WIFI_ERROR", "Failed to connect to WiFi");
     currentState = STATE_ERROR;
@@ -196,6 +209,15 @@ void initializeWiFi() {
 }
 
 void loop() {
+  // Handle Serial provisioning commands (CONFIG:)
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    if (command.length() > 0) {
+      handleSerialCommand(command);
+    }
+  }
+
   // Handle incoming UART commands from ESP32 Main
   if (Serial1.available()) {
     String command = Serial1.readStringUntil('\n');
@@ -255,7 +277,7 @@ bool sendPatientDataToServer(camera_fb_t *fb) {
   }
 
   HTTPClient http;
-  String uploadUrl = String(SERVER_URL) + "/api/patient/health-data";
+  String uploadUrl = String(configManager.getServerUrl()) + "/api/patient/health-data";
   http.setTimeout(REQUEST_TIMEOUT);
 
   if (!http.begin(uploadUrl)) {
@@ -309,10 +331,6 @@ void handleCommand(String command) {
     String status = "CAM:" + String(currentState);
     Serial1.println(status);
   } 
-  else if (command.startsWith("CONFIG:")) {
-    String config = command.substring(7);
-    logEvent("CONFIG", "Received config: " + config);
-  }
   else {
     logEvent("UNKNOWN_CMD", command);
   }
@@ -353,6 +371,70 @@ void updateLEDStatus(CameraState state) {
       digitalWrite(LED_STATUS_PIN, LOW);
       digitalWrite(LED_AUTH_PIN, HIGH);
       break;
+  }
+}
+
+// Handle Serial console provisioning commands
+void handleSerialCommand(String command) {
+  if (command.startsWith("CONFIG:")) {
+    // Format: CONFIG:{"ssid":"YourSSID","password":"YourPassword","server":"http://192.168.1.1:5000"}
+    String jsonStr = command.substring(7);  // Remove "CONFIG:" prefix
+    
+    DynamicJsonDocument doc(512);
+    DeserializationError error = deserializeJson(doc, jsonStr);
+    
+    if (error) {
+      logEvent("CONFIG_ERROR", "JSON parse failed: " + String(error.c_str()));
+      Serial.println("Error parsing JSON. Format: CONFIG:{\"ssid\":\"...\",\"password\":\"...\",\"server\":\"...\"}");
+      return;
+    }
+    
+    // Extract values
+    const char* ssid = doc["ssid"];
+    const char* password = doc["password"];
+    const char* server = doc["server"];
+    
+    if (!ssid || !password || !server) {
+      logEvent("CONFIG_ERROR", "Missing required fields (ssid, password, server)");
+      return;
+    }
+    
+    // Save to EEPROM
+    if (configManager.saveToEEPROM(ssid, password, server)) {
+      logEvent("CONFIG_SUCCESS", "Configuration saved. Rebooting...");
+      Serial.println("✓ Configuration saved successfully!");
+      configManager.printConfig();
+      
+      delay(2000);
+      ESP.restart();
+    } else {
+      logEvent("CONFIG_ERROR", "Failed to save configuration");
+      Serial.println("✗ Failed to save configuration to EEPROM");
+    }
+  }
+  else if (command == "CONFIG") {
+    // Print current configuration
+    configManager.printConfig();
+  }
+  else if (command == "RESET") {
+    // Factory reset
+    logEvent("RESET", "Factory reset requested. Rebooting...");
+    Serial.println("Performing factory reset...");
+    delay(1000);
+    ESP.restart();
+  }
+  else if (command == "HELP") {
+    Serial.println("\n========== ESP32-CAM Configuration Commands ==========");
+    Serial.println("CONFIG                    - Show current configuration");
+    Serial.println("CONFIG:{...}              - Save WiFi credentials (JSON format)");
+    Serial.println("RESET                     - Factory reset (EEPROM will be cleared)");
+    Serial.println("HELP                      - Show this help message");
+    Serial.println("\nExample provisioning command:");
+    Serial.println("CONFIG:{\"ssid\":\"MyWiFi\",\"password\":\"MyPassword\",\"server\":\"http://192.168.1.100:5000\"}");
+    Serial.println("======================================================\n");
+  }
+  else {
+    Serial.println("Unknown command. Type 'HELP' for available commands.");
   }
 }
 

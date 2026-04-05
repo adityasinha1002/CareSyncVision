@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # NGINX Reverse Proxy with HTTPS
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    container_name: caresynvision-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - caresynvision-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "https://localhost/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: caresynvision-db
+    environment:
+      POSTGRES_USER: caresynvision
+      POSTGRES_PASSWORD: caresynvision_secure_password
+      POSTGRES_DB: caresynvision
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U caresynvision"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - caresynvision-network
+    restart: unless-stopped
+
+  # Flask AI Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: caresynvision-backend
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: 1
+      DATABASE_URL: postgresql://caresynvision:caresynvision_secure_password@postgres:5432/caresynvision
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-change-this-in-production}
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - caresynvision-network
+    restart: unless-stopped
+    command: gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: caresynvision-frontend
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-https://localhost/api}
+      VITE_APP_NAME: CareSyncVision
+      VITE_ENV: ${VITE_ENV:-production}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - caresynvision-network
+    restart: unless-stopped
+
+  # Redis Cache (optional, for future use)
+  redis:
+    image: redis:7-alpine
+    container_name: caresynvision-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - caresynvision-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  caresynvision-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
