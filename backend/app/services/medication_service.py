@@ -5,6 +5,7 @@ Business logic for medication tracking and adherence
 
 import logging
 from datetime import datetime, timedelta
+from typing import Any, cast
 from sqlalchemy import select
 from .. import db
 from app.models.medication_model import Medication
@@ -229,7 +230,7 @@ class MedicationService:
                 select(Medication).where(
                     Medication.patient_id == patient_id,
                     Medication.scheduled_time.isnot(None),
-                    Medication.administered.is_(False),
+                    cast(Any, Medication.administered) == False,
                     Medication.created_at <= cutoff_time
                 )
             ).scalars().all()
@@ -241,7 +242,7 @@ class MedicationService:
                         Alert.patient_id == patient_id,
                         Alert.alert_type == 'medication',
                         Alert.message.contains(med.medication_name),
-                        Alert.resolved_at.is_(None)
+                        cast(Any, Alert.resolved_at) == None
                     )
                 ).scalars().first()
                 
