@@ -88,7 +88,7 @@ class MedicationService:
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
-            med_id = medication_data.get('med_id')
+            med_id = medication_data.get('med_id') or medication_data.get('medication_id')
             
             med = get_db_session().get(Medication, med_id)
             if not med or med.patient_id != patient_id:

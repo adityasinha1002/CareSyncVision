@@ -3,13 +3,14 @@ Patient Data Routes
 Handles patient health data ingestion from ESP32 devices
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, g
 from datetime import datetime
 import logging
 import os
 import uuid
 from app.services.patient_service import PatientService
 from app.middleware.validation import validate_patient_headers
+from app.services.auth_service import token_required
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ patient_service = PatientService()
 
 
 @patient_bp.route('/patient', methods=['POST'])
+@token_required
 def create_patient():
     """
     Create a new patient record
@@ -55,6 +57,7 @@ def create_patient():
 
 
 @patient_bp.route('/patient/<patient_id>', methods=['GET'])
+@token_required
 def get_patient(patient_id):
     """
     Get patient information with current health status
@@ -74,17 +77,19 @@ def get_patient(patient_id):
 
 
 @patient_bp.route('/patient', methods=['GET'])
+@token_required
 def get_patients():
     """
     Get list of all patients
-    
+
     Query parameters:
     - active_only: bool (default: true)
-    - limit: int (default: 100)
+    - limit: int (default: 100, max: 1000)
     """
     try:
         active_only = request.args.get('active_only', 'true').lower() == 'true'
         limit = request.args.get('limit', 100, type=int)
+        limit = min(limit, 1000)  # Upper bound
         
         result = patient_service.get_patient_list(active_only=active_only, limit=limit)
         
@@ -96,6 +101,7 @@ def get_patients():
 
 
 @patient_bp.route('/patient/<patient_id>', methods=['PUT'])
+@token_required
 def update_patient(patient_id):
     """
     Update patient information
@@ -180,6 +186,7 @@ def receive_health_data():
 
 
 @patient_bp.route('/patient/<patient_id>/vitals', methods=['POST'])
+@token_required
 def receive_vitals(patient_id):
     """
     Receive vital signs data from sensors or wearables
@@ -220,6 +227,7 @@ def receive_vitals(patient_id):
 
 
 @patient_bp.route('/patient/<patient_id>/history', methods=['GET'])
+@token_required
 def get_patient_history(patient_id):
     """
     Retrieve patient's health data history

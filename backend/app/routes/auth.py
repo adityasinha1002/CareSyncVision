@@ -6,6 +6,7 @@ Login, token generation, and access control
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
+import os
 import re
 from sqlalchemy import select
 from app.services.auth_service import AuthService
@@ -130,7 +131,7 @@ def register():
     
     except Exception as e:
         logger.error(f"Error during registration: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @auth_bp.route('/auth/login', methods=['POST'])
@@ -190,10 +191,9 @@ def login():
                     logger.warning(f"Login failed: Invalid password for patient {patient_id}")
                     return jsonify({"error": "Invalid credentials"}), 401
             else:
-                # Fallback for existing patients without password_hash
-                if legacy_password != "password":
-                    logger.warning(f"Login failed: Invalid password for patient {patient_id}")
-                    return jsonify({"error": "Invalid credentials"}), 401
+                # No password set for this legacy account
+                logger.warning(f"Login failed: No password set for legacy patient {patient_id}")
+                return jsonify({"error": "Invalid credentials"}), 401
         
         # Generate JWT token
         token = AuthService.generate_token(patient.patient_id)
@@ -214,7 +214,7 @@ def login():
     
     except Exception as e:
         logger.error(f"Error during login: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @auth_bp.route('/auth/verify', methods=['GET'])
@@ -278,11 +278,17 @@ def refresh_token():
         if not token:
             return jsonify({'error': 'Token is missing'}), 401
         
-        # Verify token (even if expired, decode it)
+        # Decode token, verifying signature but ignoring expiry
         try:
             import jwt
-            payload = jwt.decode(token, '', algorithms=['HS256'], options={"verify_signature": False})
-        except:
+            secret = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
+            payload = jwt.decode(
+                token,
+                secret,
+                algorithms=['HS256'],
+                options={"verify_exp": False}
+            )
+        except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
         
         patient_id = payload.get('patient_id')

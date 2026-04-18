@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 from app.services.medication_service import MedicationService
+from app.services.auth_service import token_required
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ medication_service = MedicationService()
 
 
 @medication_bp.route('/medication', methods=['POST'])
+@token_required
 def create_medication():
     """
     Create a new medication record for patient
@@ -57,6 +59,7 @@ def create_medication():
 
 
 @medication_bp.route('/patient/<patient_id>/medication', methods=['GET'])
+@token_required
 def get_medication_schedule(patient_id):
     """
     Get medication schedule for patient
@@ -76,6 +79,7 @@ def get_medication_schedule(patient_id):
 
 
 @medication_bp.route('/patient/<patient_id>/medication/log', methods=['POST'])
+@token_required
 def record_medication_event(patient_id):
     """
     Record a medication administration event
@@ -106,6 +110,7 @@ def record_medication_event(patient_id):
 
 
 @medication_bp.route('/patient/<patient_id>/medication/adherence', methods=['GET'])
+@token_required
 def get_medication_adherence(patient_id):
     """
     Get medication adherence metrics
@@ -130,6 +135,7 @@ def get_medication_adherence(patient_id):
 
 
 @medication_bp.route('/patient/<patient_id>/medication/missed', methods=['GET'])
+@token_required
 def check_missed_doses(patient_id):
     """
     Check for missed medication doses and create alerts
