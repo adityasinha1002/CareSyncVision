@@ -1,7 +1,7 @@
 """
 WSGI Entry Point - at project root for Railway
 
-Gunicorn loads this with: gunicorn wsgi:app
+Gunicorn loads this with: gunicorn main:app
 """
 
 import sys
