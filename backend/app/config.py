@@ -15,10 +15,14 @@ class Config:
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-key-change-this')
     
     # Database settings
-    SQLALCHEMY_DATABASE_URI = os.getenv(
+    database_url = os.getenv(
         'DATABASE_URL',
         'postgresql://caresynvision:caresynvision@localhost:5432/caresynvision'
     )
+    # Convert postgresql:// to postgresql+psycopg:// for psycopg v3 driver
+    if database_url and database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+    SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Upload settings
@@ -56,8 +60,15 @@ class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', '')
     SQLALCHEMY_ECHO = False
+    
+    # Convert postgresql:// to postgresql+psycopg:// for psycopg v3 driver
+    @property
+    def SQLALCHEMY_DATABASE_URI(self):
+        db_url = os.getenv('DATABASE_URL', '')
+        if db_url and db_url.startswith('postgresql://'):
+            db_url = db_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+        return db_url
 
 
 # Configuration dictionary

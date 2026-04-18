@@ -39,10 +39,15 @@ def create_app(config=None):
     app.config.from_object(ConfigClass)
     
     # Override with environment variables
+    db_url = os.getenv('DATABASE_URL', app.config.get('SQLALCHEMY_DATABASE_URI'))
+    # Convert postgresql:// to postgresql+psycopg:// for psycopg v3 driver
+    if db_url and db_url.startswith('postgresql://'):
+        db_url = db_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+    
     app.config.update(
         SECRET_KEY=os.getenv('FLASK_SECRET_KEY', app.config.get('SECRET_KEY')),
         MAX_CONTENT_LENGTH=int(os.getenv('MAX_IMAGE_SIZE', 5242880)),
-        SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL', app.config.get('SQLALCHEMY_DATABASE_URI')),
+        SQLALCHEMY_DATABASE_URI=db_url,
     )
     
     # Override config with passed dict if provided
