@@ -25,6 +25,15 @@ class Config:
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # Connection pool settings for production stability
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 5,
+        'pool_recycle': 299,  # Recycle connections every 5 minutes (300s - 1s buffer)
+        'pool_pre_ping': True,  # Test connections before using them
+        'pool_timeout': 30,
+        'max_overflow': 10,  # Allow up to 15 total connections (5 + 10)
+    }
+    
     # Upload settings
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../uploads')
     MAX_CONTENT_LENGTH = int(os.getenv('MAX_IMAGE_SIZE', 5242880))  # 5MB
