@@ -89,12 +89,15 @@ def create_app(config=None):
     
     # Initialize database - non-blocking, won't crash if DB unavailable
     try:
-        db.init_app(app)
-        migrate.init_app(app, db)
-        logger.info("Database initialized")
+        if db_url:
+            db.init_app(app)
+            migrate.init_app(app, db)
+            logger.info("✅ Database and migrations initialized successfully")
+        else:
+            logger.error("❌ DATABASE_URL not set - database operations will fail!")
     except Exception as e:
-        logger.warning(f"Database initialization deferred: {e}")
-        # App will still start, database requests will fail gracefully
+        logger.error(f"❌ Database initialization failed: {str(e)}", exc_info=True)
+        # App will still start, database requests will fail with clear error
     
     # Add root route for health check (accessible at /)
     @app.route('/', methods=['GET'])
