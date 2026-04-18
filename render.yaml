@@ -4,7 +4,7 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt && flask db upgrade
-    startCommand: gunicorn --preload-app -w 2 -b 0.0.0.0:10000 wsgi:app
+    startCommand: gunicorn -w 2 -b 0.0.0.0:10000 wsgi:app
     envVars:
       - key: FLASK_ENV
         value: production
