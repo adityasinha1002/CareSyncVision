@@ -55,7 +55,7 @@ def create_medication():
         
     except Exception as e:
         logger.error(f"Error creating medication: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @medication_bp.route('/patient/<patient_id>/medication', methods=['GET'])
@@ -106,7 +106,7 @@ def record_medication_event(patient_id):
         
     except Exception as e:
         logger.error(f"Error recording medication: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @medication_bp.route('/patient/<patient_id>/medication/adherence', methods=['GET'])

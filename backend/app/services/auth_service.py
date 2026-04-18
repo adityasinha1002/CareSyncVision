@@ -101,9 +101,12 @@ class AuthService:
         except jwt.InvalidTokenError as e:
             logger.warning(f"Token decode failed: {str(e)}")
             return None
+
+    @staticmethod
+    def hash_password(password):
         """Hash password using werkzeug"""
         return generate_password_hash(password, method='pbkdf2:sha256')
-    
+
     @staticmethod
     def check_password(hashed_password, password):
         """Verify password against hash"""

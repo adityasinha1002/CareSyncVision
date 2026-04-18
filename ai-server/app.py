@@ -8,6 +8,7 @@ Patient Auth → Health Analysis Engine → Medication Adjustment Engine → Res
 
 import logging
 import os
+import re
 import json
 import uuid
 from datetime import datetime
@@ -33,7 +34,11 @@ logger = logging.getLogger(__name__)
 
 # Flask app initialization
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'https://caresyncvision.vercel.app',
+])
 
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -107,9 +112,10 @@ def receive_patient_health_data():
             logger.warning("Empty health data received")
             return jsonify({"error": "Empty health data"}), 400
         
-        # Save image temporarily for analysis
+        # Save image temporarily for analysis — sanitise patient_id to prevent path injection
         health_id = str(uuid.uuid4())[:8]
-        image_filename = f"health_{patient_id}_{health_id}_{int(datetime.now().timestamp()*1000)}.jpg"
+        safe_patient_id = re.sub(r'[^a-zA-Z0-9_-]', '_', patient_id)
+        image_filename = f"health_{safe_patient_id}_{health_id}_{int(datetime.now().timestamp()*1000)}.jpg"
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
         
         with open(image_path, 'wb') as f:
@@ -130,7 +136,7 @@ def receive_patient_health_data():
         
     except Exception as e:
         logger.error(f"Error receiving health data: {str(e)}")
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 @app.route('/api/patient/vitals', methods=['POST'])
 def receive_patient_vitals():

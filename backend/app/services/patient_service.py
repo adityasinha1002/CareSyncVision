@@ -64,7 +64,7 @@ class PatientService:
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error creating patient: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to create patient'}
     
     def get_patient(self, patient_id):
         """
@@ -110,7 +110,7 @@ class PatientService:
 
         except Exception as e:
             logger.error(f"Error retrieving patient: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to retrieve patient'}
     
     def get_patient_list(self, active_only=True, limit=100):
         """
@@ -132,7 +132,7 @@ class PatientService:
 
         except Exception as e:
             logger.error(f"Error retrieving patient list: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to retrieve patient list'}
     
     def update_patient(self, patient_id, **kwargs):
         """
@@ -162,7 +162,7 @@ class PatientService:
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error updating patient: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to update patient'}
     
     def process_patient_data(self, patient_data):
         """
@@ -229,7 +229,7 @@ class PatientService:
             return {
                 'status_code': 500,
                 'success': False,
-                'error': str(e)
+                'error': 'Failed to process health data'
             }
     
     def process_vitals(self, vitals_data):
@@ -282,7 +282,7 @@ class PatientService:
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error processing vitals: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to process vitals'}
     
     def get_patient_history(self, patient_id, days=7, limit=100):
         """
@@ -318,7 +318,7 @@ class PatientService:
         
         except Exception as e:
             logger.error(f"Error retrieving history: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to retrieve patient history'}
     
     def _calculate_risk_score(self, patient_id):
         """

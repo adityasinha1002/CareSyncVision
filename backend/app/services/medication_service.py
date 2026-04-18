@@ -69,7 +69,7 @@ class MedicationService:
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error creating medication: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to create medication'}
     
     def record_medication(self, patient_id, medication_data):
         """
@@ -111,7 +111,7 @@ class MedicationService:
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error recording medication: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to record medication'}
     
     def get_patient_schedule(self, patient_id):
         """
@@ -142,7 +142,7 @@ class MedicationService:
         
         except Exception as e:
             logger.error(f"Error retrieving schedule: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to retrieve medication schedule'}
     
     def get_adherence_metrics(self, patient_id, days=30):
         """
@@ -206,7 +206,7 @@ class MedicationService:
         
         except Exception as e:
             logger.error(f"Error retrieving adherence: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to retrieve adherence metrics'}
     
     def check_missed_doses(self, patient_id):
         """
@@ -270,7 +270,7 @@ class MedicationService:
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error checking missed doses: {str(e)}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': 'Failed to check missed doses'}
     
     def _get_next_medication_time(self, medications):
         """

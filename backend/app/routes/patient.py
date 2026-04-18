@@ -54,7 +54,7 @@ def create_patient():
         
     except Exception as e:
         logger.error(f"Error creating patient: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @patient_bp.route('/patient/<patient_id>', methods=['GET'])
@@ -74,7 +74,7 @@ def get_patient(patient_id):
         
     except Exception as e:
         logger.error(f"Error retrieving patient: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @patient_bp.route('/patient', methods=['GET'])
@@ -98,7 +98,7 @@ def get_patients():
         
     except Exception as e:
         logger.error(f"Error retrieving patients: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @patient_bp.route('/patient/<patient_id>', methods=['PUT'])
@@ -122,7 +122,7 @@ def update_patient(patient_id):
         
     except Exception as e:
         logger.error(f"Error updating patient: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @patient_bp.route('/patient/health-data', methods=['POST'])
@@ -184,7 +184,7 @@ def receive_health_data():
         
     except Exception as e:
         logger.error(f"Error receiving health data: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @patient_bp.route('/patient/<patient_id>/vitals', methods=['POST'])
@@ -212,7 +212,7 @@ def receive_vitals(patient_id):
         
         data['patient_id'] = patient_id
         
-        logger.info(f"Received vitals for patient {patient_id}: {data}")
+        logger.info(f"Received vitals for patient {patient_id}")
         
         # Process vitals
         result = patient_service.process_vitals(data)
