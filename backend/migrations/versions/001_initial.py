@@ -19,28 +19,26 @@ depends_on = None
 def upgrade():
     # Create patient table
     op.create_table('patient',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('user_id', sa.String(255), nullable=False),
-        sa.Column('first_name', sa.String(255), nullable=False),
-        sa.Column('last_name', sa.String(255), nullable=False),
-        sa.Column('date_of_birth', sa.Date(), nullable=True),
-        sa.Column('gender', sa.String(50), nullable=True),
-        sa.Column('contact_number', sa.String(20), nullable=True),
-        sa.Column('email', sa.String(255), nullable=True),
-        sa.Column('emergency_contact', sa.String(255), nullable=True),
-        sa.Column('emergency_contact_number', sa.String(20), nullable=True),
-        sa.Column('medical_history', sa.Text(), nullable=True),
-        sa.Column('allergies', sa.Text(), nullable=True),
+        sa.Column('patient_id', sa.String(36), nullable=False),
+        sa.Column('email', sa.String(255), nullable=True, unique=True),
+        sa.Column('password_hash', sa.String(255), nullable=True),
+        sa.Column('name', sa.String(255), nullable=False),
+        sa.Column('age', sa.Integer(), nullable=True),
+        sa.Column('medical_conditions', sa.JSON(), nullable=True),
+        sa.Column('contact_info', sa.JSON(), nullable=True),
+        sa.Column('esp32_enabled', sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('user_id')
+        sa.Column('active', sa.Boolean(), nullable=False, server_default=sa.true()),
+        sa.PrimaryKeyConstraint('patient_id'),
+        sa.Index('ix_patient_email', 'email'),
+        sa.UniqueConstraint('email', name='uq_patient_email')
     )
 
     # Create health_record table
     op.create_table('health_record',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('patient_id', sa.Integer(), nullable=False),
+        sa.Column('patient_id', sa.String(36), nullable=False),
         sa.Column('heart_rate', sa.Integer(), nullable=True),
         sa.Column('blood_pressure_systolic', sa.Integer(), nullable=True),
         sa.Column('blood_pressure_diastolic', sa.Integer(), nullable=True),
@@ -54,14 +52,14 @@ def upgrade():
         sa.Column('notes', sa.Text(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['patient_id'], ['patient.id']),
+        sa.ForeignKeyConstraint(['patient_id'], ['patient.patient_id']),
         sa.PrimaryKeyConstraint('id')
     )
 
     # Create medication table
     op.create_table('medication',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('patient_id', sa.Integer(), nullable=False),
+        sa.Column('patient_id', sa.String(36), nullable=False),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('dosage', sa.String(100), nullable=False),
         sa.Column('frequency', sa.String(100), nullable=False),
@@ -71,14 +69,29 @@ def upgrade():
         sa.Column('side_effects', sa.Text(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['patient_id'], ['patient.id']),
+        sa.ForeignKeyConstraint(['patient_id'], ['patient.patient_id']),
         sa.PrimaryKeyConstraint('id')
     )
 
-    # Create session_alert table
-    op.create_table('session_alert',
+    # Create session table
+    op.create_table('session',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('patient_id', sa.Integer(), nullable=False),
+        sa.Column('patient_id', sa.String(36), nullable=False),
+        sa.Column('session_type', sa.String(100), nullable=True),
+        sa.Column('start_time', sa.DateTime(), nullable=True),
+        sa.Column('end_time', sa.DateTime(), nullable=True),
+        sa.Column('status', sa.String(50), nullable=True),
+        sa.Column('data', sa.JSON(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(['patient_id'], ['patient.patient_id']),
+        sa.PrimaryKeyConstraint('id')
+    )
+
+    # Create alert table
+    op.create_table('alert',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('patient_id', sa.String(36), nullable=False),
         sa.Column('alert_type', sa.String(100), nullable=False),
         sa.Column('severity', sa.String(50), nullable=False),
         sa.Column('message', sa.Text(), nullable=False),
@@ -86,13 +99,14 @@ def upgrade():
         sa.Column('is_read', sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['patient_id'], ['patient.id']),
+        sa.ForeignKeyConstraint(['patient_id'], ['patient.patient_id']),
         sa.PrimaryKeyConstraint('id')
     )
 
 
 def downgrade():
-    op.drop_table('session_alert')
+    op.drop_table('alert')
+    op.drop_table('session')
     op.drop_table('medication')
     op.drop_table('health_record')
     op.drop_table('patient')
