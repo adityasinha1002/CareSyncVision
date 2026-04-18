@@ -2,7 +2,7 @@
 Health Records and Vital Data Routes
 """
 
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request
 from datetime import datetime
 from functools import wraps
 import logging
@@ -18,13 +18,8 @@ health_bp = Blueprint('health', __name__)
 
 
 def get_db_session():
-    """Get database session from current app context"""
-    try:
-        # Try to get session from current app extensions
-        return current_app.extensions['sqlalchemy'].session
-    except:
-        # Fallback to global db.session
-        return db.session
+    """Return the active SQLAlchemy session."""
+    return db.session
 
 
 # JWT Token Verification
@@ -108,7 +103,7 @@ def submit_vitals(current_patient_id):
             return jsonify({'error': 'Request body is required'}), 400
         
         # Validate patient exists
-        patient = Patient.query.filter_by(patient_id=current_patient_id).first()
+        patient = get_db_session().get(Patient, current_patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
         
@@ -196,15 +191,17 @@ def get_recent_vitals(current_patient_id):
         limit = min(limit, 100)  # Max 100 records
         
         # Verify patient exists
-        patient = Patient.query.filter_by(patient_id=current_patient_id).first()
+        patient = get_db_session().get(Patient, current_patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
         
         # Get recent vitals
-        vitals = HealthRecord.query.filter_by(
-            patient_id=current_patient_id,
-            record_type='vital'
-        ).order_by(HealthRecord.timestamp.desc()).limit(limit).all()
+        vitals = get_db_session().execute(
+            db.select(HealthRecord).where(
+                HealthRecord.patient_id == current_patient_id,
+                HealthRecord.record_type == 'vital'
+            ).order_by(HealthRecord.timestamp.desc()).limit(limit)
+        ).scalars().all()
         
         return jsonify({
             'success': True,

@@ -3,7 +3,7 @@ Authentication Routes
 Login, token generation, and access control
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 import re
@@ -18,13 +18,8 @@ auth_bp = Blueprint('auth', __name__)
 
 
 def get_db_session():
-    """Get database session from current app context"""
-    try:
-        # Try to get session from current app extensions
-        return current_app.extensions['sqlalchemy'].session
-    except:
-        # Fallback to global db.session
-        return db.session
+    """Return the active SQLAlchemy session."""
+    return db.session
 
 
 def validate_email(email):
