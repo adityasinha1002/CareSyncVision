@@ -81,9 +81,16 @@ def create_app(config=None):
     except Exception as e:
         logger.warning(f"Could not create upload folder: {e}")
     
-    # Enable CORS with environment-based origins
-    cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
-    cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]  # Clean whitespace
+    # Enable CORS with environment-based origins.
+    # Keep localhost for development and always allow the Netlify production frontend.
+    cors_origins = [
+        'http://localhost:3000',
+        'http://localhost:5000',
+        'https://caresyncvision.netlify.app',
+    ]
+    env_cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
+    cors_origins.extend(env_cors_origins)
+    cors_origins = list(dict.fromkeys(cors_origins))
     logger.info(f"CORS origins configured: {cors_origins}")
     CORS(app, origins=cors_origins, supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
     
