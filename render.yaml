@@ -4,7 +4,7 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: flask db upgrade && gunicorn --bind 0.0.0.0:10000 --workers 2 --timeout 120 wsgi:app
+    startCommand: gunicorn --bind 0.0.0.0:10000 --workers 2 --timeout 120 --preload-app wsgi:app
     envVars:
       - key: FLASK_ENV
         value: production
