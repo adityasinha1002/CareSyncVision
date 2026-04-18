@@ -1,18 +1,13 @@
-# Multi-stage build for CareSyncVision AI Server
+# Multi-stage build for CareSyncVision Backend
 FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies required for OpenCV and other packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
     git \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
     postgresql-client \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -29,19 +24,17 @@ COPY . .
 # Create uploads and logs directories
 RUN mkdir -p uploads logs
 
-# Set environment variables (override with --env or .env file)
-ENV FLASK_APP=wsgi.py
-ENV FLASK_ENV=production
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV FLASK_ENV=production
 ENV PORT=5000
-ENV HOST=0.0.0.0
 
 # Expose Flask port
 EXPOSE 5000
 
-# Health check
+# Health check - test the API health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5000/api/health || exit 1
 
-# Run the application with Python Flask dev server (for testing)
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000"]
+# Run with gunicorn (entry point controlled by Procfile)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--worker-class", "sync", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "main:app"]
