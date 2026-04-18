@@ -1,43 +1,19 @@
 """
-Root WSGI entry point for Gunicorn
+WSGI Entry Point - at project root for Railway
 
-Directly creates the Flask app - no imports from backend package.
-This is the simplest, most reliable approach for PaaS.
+Gunicorn loads this with: gunicorn wsgi:app
 """
 
-import os
 import sys
-import logging
+import os
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Configure environment before creating app
-os.environ.setdefault('FLASK_ENV', os.environ.get('FLASK_ENV', 'production'))
-
-# Add backend to path and import the app factory
+# Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
 
-try:
-    from app import create_app
-    logger.info("✅ Imported create_app from backend.app")
-except ImportError as e:
-    logger.error(f"❌ Failed to import create_app: {e}")
-    raise
+# Create the Flask app from backend.app module
+from app import create_app
 
-# Create the Flask application
-try:
-    app = create_app()
-    logger.info("✅ Flask app created successfully")
-    logger.info(f"✅ Registered {len(list(app.url_map.iter_rules()))} routes")
-except Exception as e:
-    logger.error(f"❌ Failed to create app: {e}", exc_info=True)
-    raise
+app = create_app()
 
-# Expose app for Gunicorn
-if __name__ != '__main__':
-    logger.info("✅ WSGI app ready for Gunicorn")
-
-
-
+if __name__ == '__main__':
+    app.run()
