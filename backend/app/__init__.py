@@ -5,6 +5,7 @@ CareSyncVision Flask Application Factory
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import logging
 import os
 import tempfile
@@ -15,6 +16,9 @@ load_dotenv()
 
 # Initialize SQLAlchemy
 db = SQLAlchemy()
+
+# Initialize Migrate
+migrate = Migrate()
 
 # Configure logging
 logging.basicConfig(
@@ -75,6 +79,7 @@ def create_app(config=None):
     
     # Initialize database
     db.init_app(app)
+    migrate.init_app(app, db)
     
     # Register blueprints (routes)
     from app.routes.health import health_bp
@@ -116,4 +121,4 @@ def create_app(config=None):
 
 
 # Export for module-level access
-__all__ = ['create_app', 'db']
+__all__ = ['create_app', 'db', 'migrate']
