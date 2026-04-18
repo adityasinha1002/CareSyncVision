@@ -7,6 +7,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from flask import current_app
+from sqlalchemy import select, desc, and_
 from .. import db
 from app.models.patient_model import Patient
 from app.models.health_record_model import HealthRecord
@@ -77,22 +78,28 @@ class PatientService:
         Get patient by ID with recent health records
         """
         try:
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             
             if not patient:
                 logger.warning(f"Patient {patient_id} not found")
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
             # Get last 7 days of health records
-            recent_records = HealthRecord.query.filter(
-                HealthRecord.patient_id == patient_id,
-                HealthRecord.timestamp >= datetime.utcnow() - timedelta(days=7)
-            ).order_by(HealthRecord.timestamp.desc()).limit(10).all()
+            recent_records = get_db_session().execute(
+                select(HealthRecord).where(
+                    and_(
+                        HealthRecord.patient_id == patient_id,
+                        HealthRecord.timestamp >= datetime.utcnow() - timedelta(days=7)
+                    )
+                ).order_by(desc(HealthRecord.timestamp)).limit(10)
+            ).scalars().all()
             
             # Get current risk score (from latest record)
-            latest_record = HealthRecord.query.filter(
-                HealthRecord.patient_id == patient_id
-            ).order_by(HealthRecord.timestamp.desc()).first()
+            latest_record = get_db_session().execute(
+                select(HealthRecord).where(
+                    HealthRecord.patient_id == patient_id
+                ).order_by(desc(HealthRecord.timestamp)).limit(1)
+            ).scalars().first()
             
             current_risk = latest_record.risk_score if latest_record else 0
             
@@ -115,11 +122,11 @@ class PatientService:
         Get list of patients
         """
         try:
-            query = Patient.query
+            stmt = select(Patient)
             if active_only:
-                query = query.filter_by(active=True)
+                stmt = stmt.where(Patient.active == True)
             
-            patients = query.limit(limit).all()
+            patients = get_db_session().execute(stmt.limit(limit)).scalars().all()
             
             return {
                 'success': True,
@@ -136,7 +143,7 @@ class PatientService:
         Update patient information
         """
         try:
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
@@ -176,7 +183,7 @@ class PatientService:
             image_path = patient_data.get('image_path')
             
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {
                     'status_code': 404,
@@ -243,7 +250,7 @@ class PatientService:
             patient_id = vitals_data.get('patient_id')
             
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
@@ -287,16 +294,20 @@ class PatientService:
         """
         try:
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
             # Get records from specified time period
             cutoff_date = datetime.utcnow() - timedelta(days=days)
-            records = HealthRecord.query.filter(
-                HealthRecord.patient_id == patient_id,
-                HealthRecord.timestamp >= cutoff_date
-            ).order_by(HealthRecord.timestamp.desc()).limit(limit).all()
+            records = get_db_session().execute(
+                select(HealthRecord).where(
+                    and_(
+                        HealthRecord.patient_id == patient_id,
+                        HealthRecord.timestamp >= cutoff_date
+                    )
+                ).order_by(desc(HealthRecord.timestamp)).limit(limit)
+            ).scalars().all()
             
             logger.info(f"Retrieved history for patient {patient_id}: {len(records)} records")
             
@@ -319,10 +330,14 @@ class PatientService:
         """
         try:
             # Get recent records
-            recent_records = HealthRecord.query.filter(
-                HealthRecord.patient_id == patient_id,
-                HealthRecord.timestamp >= datetime.utcnow() - timedelta(days=7)
-            ).all()
+            recent_records = get_db_session().execute(
+                select(HealthRecord).where(
+                    and_(
+                        HealthRecord.patient_id == patient_id,
+                        HealthRecord.timestamp >= datetime.utcnow() - timedelta(days=7)
+                    )
+                )
+            ).scalars().all()
             
             if not recent_records:
                 return 25  # Baseline risk
@@ -380,21 +395,33 @@ class PatientService:
         Create alerts based on risk score and conditions
         """
         try:
+            session = get_db_session()
+            
             # Clear old high-risk alerts if risk decreased
             if risk_score < self.RISK_HIGH_THRESHOLD:
-                Alert.query.filter(
-                    Alert.patient_id == patient_id,
-                    Alert.alert_type == 'health',
-                    Alert.resolved_at == None
-                ).update({'resolved_at': datetime.utcnow()})
+                old_alerts = session.execute(
+                    select(Alert).where(
+                        and_(
+                            Alert.patient_id == patient_id,
+                            Alert.alert_type == 'health',
+                            Alert.resolved_at == None
+                        )
+                    )
+                ).scalars().all()
+                for alert in old_alerts:
+                    alert.resolved_at = datetime.utcnow()
             
             # Create new alert if risk is high
             if risk_score >= self.RISK_HIGH_THRESHOLD:
-                existing_alert = Alert.query.filter(
-                    Alert.patient_id == patient_id,
-                    Alert.alert_type == 'health',
-                    Alert.resolved_at == None
-                ).first()
+                existing_alert = session.execute(
+                    select(Alert).where(
+                        and_(
+                            Alert.patient_id == patient_id,
+                            Alert.alert_type == 'health',
+                            Alert.resolved_at == None
+                        )
+                    )
+                ).scalars().first()
                 
                 if not existing_alert:
                     severity = 'critical' if risk_score >= 85 else 'high'
@@ -404,11 +431,14 @@ class PatientService:
                         severity=severity,
                         message=f'High health risk detected (Score: {risk_score})'
                     )
-                    get_db_session().add(alert)
+                    session.add(alert)
             
-            get_db_session().commit()
+            session.commit()
         
         except Exception as e:
             logger.warning(f"Error creating alerts: {str(e)}")
-            get_db_session().rollback()
+            try:
+                get_db_session().rollback()
+            except:
+                pass
 
