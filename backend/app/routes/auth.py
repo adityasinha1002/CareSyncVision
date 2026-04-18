@@ -10,7 +10,7 @@ import re
 from sqlalchemy import select
 from app.services.auth_service import AuthService
 from app.models.patient_model import Patient
-from app import db
+from . import db
 
 logger = logging.getLogger(__name__)
 

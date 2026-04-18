@@ -3,7 +3,7 @@ Session and Alert ORM Models using Flask-SQLAlchemy
 """
 
 from datetime import datetime
-from app import db
+from . import db
 import uuid
 
 

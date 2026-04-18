@@ -3,7 +3,7 @@ Patient ORM Model using Flask-SQLAlchemy
 """
 
 from datetime import datetime
-from app import db
+from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 

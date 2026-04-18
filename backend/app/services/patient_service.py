@@ -6,7 +6,7 @@ Business logic for patient health data processing and management
 import logging
 import os
 from datetime import datetime, timedelta
-from app import db
+from . import db
 from app.models.patient_model import Patient
 from app.models.health_record_model import HealthRecord
 from app.models.session_alert_model import Alert

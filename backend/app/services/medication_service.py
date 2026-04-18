@@ -5,7 +5,7 @@ Business logic for medication tracking and adherence
 
 import logging
 from datetime import datetime, timedelta
-from app import db
+from . import db
 from app.models.medication_model import Medication
 from app.models.patient_model import Patient
 from app.models.session_alert_model import Alert

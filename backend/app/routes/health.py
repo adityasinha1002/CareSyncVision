@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request
 from datetime import datetime
 from functools import wraps
 import logging
-from app import db
+from . import db
 from app.models.health_record_model import HealthRecord
 from app.models.patient_model import Patient
 import jwt
