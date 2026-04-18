@@ -76,10 +76,10 @@ export const healthService = {
   getStatus: () => api.get('/status'),
   
   submitVitals: (vitalsData) =>
-    api.post('/health/vitals', vitalsData),
+    api.post('/vitals', vitalsData),
   
   getRecentVitals: (limit = 10) =>
-    api.get('/health/vitals/recent', { params: { limit } }),
+    api.get('/vitals/recent', { params: { limit } }),
 };
 
 export const patientService = {
