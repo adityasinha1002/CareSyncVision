@@ -1,30 +1,21 @@
 import { useState } from 'react';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { medicationService } from '../services/api';
-  return (
-    <div className="dashboard-card border-primary">
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary">
-        <Pill className="w-5 h-5 text-primary" /> Medication Tracker
-      </h2>
-      {medications.length === 0 ? (
-        <div className="text-gray-400">No medications</div>
-      ) : (
-        <ul className="divide-y divide-gray-100">
-          {medications.map((med) => (
-            <li key={med.id} className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-primary">{med.name}</span>
-                <span className="ml-2 text-xs text-gray-500">{med.dosage}</span>
-              </div>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${med.taken ? 'bg-primary/10 text-primary' : 'bg-red-100 text-red-700'}`}>
-                {med.taken ? 'Taken' : 'Missed'}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+
+export const MedicationTracker = ({ medications, patientId }) => {
+  const meds = medications || [];
+  const [loading, setLoading] = useState({});
+  const [error, setError] = useState(null);
+
+  const handleMedicationTaken = async (medicationId) => {
+    setLoading(prev => ({ ...prev, [medicationId]: true }));
+    try {
+      await medicationService.recordMedication(patientId, medicationId);
+    } catch (err) {
+      setError('Failed to record medication. Please try again.');
+    } finally {
+      setLoading(prev => ({ ...prev, [medicationId]: false }));
+    }
   };
 
   if (meds.length === 0) {

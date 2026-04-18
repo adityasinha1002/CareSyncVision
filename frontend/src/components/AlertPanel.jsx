@@ -1,32 +1,29 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { patientService } from '../services/api';
-  return (
-    <div className="dashboard-card border-primary">
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary">
-        <AlertCircle className="w-5 h-5 text-primary" /> Alerts
-      </h2>
-      {alerts.length === 0 ? (
-        <div className="text-gray-400">No alerts</div>
-      ) : (
-        <ul className="space-y-4">
-          {alerts.map((alert) => (
-            <li
-              key={alert.alert_id}
-              className={`border-l-4 pl-4 py-2 ${getSeverityColor(alert.severity)}`}
-            >
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-primary">{alert.alert_type}</span>
-                <span className="text-xs text-gray-400 ml-auto">{formatTimeAgo(alert.created_at)}</span>
-              </div>
-              <div className="text-gray-700">{alert.message}</div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+
+export const AlertPanel = ({ patientId }) => {
+  const [alerts, setAlerts] = useState([]);
+  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAlerts = async () => {
+      try {
+        const patientRes = await patientService.getPatient(patientId);
+        const patient = patientRes.data.data;
+        const generatedAlerts = [];
+        const riskScore = patient?.current_risk_score || 0;
+
+        if (riskScore >= 70) {
+          generatedAlerts.push({
+            alert_id: 'risk-critical',
+            severity: 'critical',
+            alert_type: 'health',
+            message: 'Critical risk score detected. Immediate attention required.',
+            created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          });
+        } else if (riskScore >= 50) {
           generatedAlerts.push({
             alert_id: 'risk-medium',
             severity: 'high',
