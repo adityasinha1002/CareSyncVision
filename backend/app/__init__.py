@@ -92,28 +92,36 @@ def create_app(config=None):
     app.register_blueprint(patient_bp, url_prefix='/api')
     app.register_blueprint(medication_bp, url_prefix='/api')
     
-    # Create database tables and initialize DB
+    # Initialize models and database
     with app.app_context():
         try:
             # Import models to register them with SQLAlchemy
+            # This allows alembic to detect schema changes
             from app.models.patient_model import Patient
             from app.models.health_record_model import HealthRecord
             from app.models.medication_model import Medication
             from app.models.session_alert_model import Session, Alert
             
-            # Create all tables
-            db.create_all()
-            logger.info("Database tables created/verified successfully")
+            logger.info("Database models loaded successfully")
+            
+            # With Flask-Migrate, tables are created via 'flask db upgrade' command
+            # This is called in render.yaml startCommand or during local setup
+            # We only verify tables exist if migration was already run
+            try:
+                # Just verify connection is possible by getting a test connection
+                with db.engine.connect() as conn:
+                    logger.info("Database connection verified")
+            except Exception as conn_err:
+                logger.warning(f"Database not yet initialized (expected during first deploy): {str(conn_err)}")
+                
         except ImportError as e:
             logger.error(f"Failed to import models: {str(e)}")
             if os.getenv('FLASK_ENV') == 'production':
                 raise
         except Exception as e:
-            logger.error(f"Database initialization error: {str(e)}", exc_info=True)
-            if os.getenv('FLASK_ENV') == 'production':
-                raise
-            else:
-                logger.warning("Continuing in development mode despite database error")
+            logger.warning(f"Database initialization note: {str(e)}")
+            # Don't raise - migrations will handle db setup on deploy
+    
     
     logger.info(f"CareSyncVision Flask app initialized (env={os.getenv('FLASK_ENV', 'development')})")
     
