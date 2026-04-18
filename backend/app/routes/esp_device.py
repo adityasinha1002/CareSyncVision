@@ -10,6 +10,8 @@ from functools import wraps
 import logging
 import os
 import jwt
+from .. import db
+from app.models.patient_model import Patient
 
 logger = logging.getLogger(__name__)
 esp_bp = Blueprint('esp', __name__)
@@ -56,7 +58,7 @@ def get_esp_device_status(current_patient_id):
     from app.models.patient_model import Patient
     
     try:
-        patient = Patient.query.get(current_patient_id)
+        patient = db.session.get(Patient, current_patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
         
@@ -101,7 +103,7 @@ def connect_esp_device(current_patient_id):
         if not device_id:
             return jsonify({'error': 'Device ID is required'}), 400
         
-        patient = Patient.query.get(current_patient_id)
+        patient = db.session.get(Patient, current_patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
         

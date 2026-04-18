@@ -5,7 +5,7 @@ Business logic for medication tracking and adherence
 
 import logging
 from datetime import datetime, timedelta
-from flask import current_app
+from sqlalchemy import select
 from .. import db
 from app.models.medication_model import Medication
 from app.models.patient_model import Patient
@@ -15,13 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_db_session():
-    """Get database session from current app context"""
-    try:
-        # Try to get session from current app extensions
-        return current_app.extensions['sqlalchemy'].session
-    except:
-        # Fallback to global db.session
-        return db.session
+    """Return the active SQLAlchemy session."""
+    return db.session
 
 
 class MedicationService:
@@ -45,7 +40,7 @@ class MedicationService:
         """
         try:
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
@@ -88,13 +83,13 @@ class MedicationService:
         """
         try:
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
             med_id = medication_data.get('med_id')
             
-            med = Medication.query.get(med_id)
+            med = get_db_session().get(Medication, med_id)
             if not med or med.patient_id != patient_id:
                 return {'success': False, 'error': 'Medication not found', 'status_code': 404}
             
@@ -126,11 +121,13 @@ class MedicationService:
         """
         try:
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
-            medications = Medication.query.filter_by(patient_id=patient_id).all()
+            medications = get_db_session().execute(
+                select(Medication).where(Medication.patient_id == patient_id)
+            ).scalars().all()
             
             logger.info(f"Retrieved schedule for patient {patient_id}: {len(medications)} medications")
             
@@ -159,16 +156,18 @@ class MedicationService:
         """
         try:
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
             # Get medications from specified period
             cutoff_date = datetime.utcnow() - timedelta(days=days)
-            medications = Medication.query.filter(
-                Medication.patient_id == patient_id,
-                Medication.created_at >= cutoff_date
-            ).all()
+            medications = get_db_session().execute(
+                select(Medication).where(
+                    Medication.patient_id == patient_id,
+                    Medication.created_at >= cutoff_date
+                )
+            ).scalars().all()
             
             if not medications:
                 return {
@@ -220,27 +219,31 @@ class MedicationService:
         """
         try:
             # Verify patient exists
-            patient = Patient.query.get(patient_id)
+            patient = get_db_session().get(Patient, patient_id)
             if not patient:
                 return {'success': False, 'error': 'Patient not found', 'status_code': 404}
             
             # Get medications that should have been taken
             cutoff_time = datetime.utcnow() - timedelta(hours=6)  # 6 hours late
-            missed_medications = Medication.query.filter(
-                Medication.patient_id == patient_id,
-                Medication.scheduled_time.isnot(None),
-                Medication.administered == False,
-                Medication.created_at <= cutoff_time
-            ).all()
+            missed_medications = get_db_session().execute(
+                select(Medication).where(
+                    Medication.patient_id == patient_id,
+                    Medication.scheduled_time.isnot(None),
+                    Medication.administered == False,
+                    Medication.created_at <= cutoff_time
+                )
+            ).scalars().all()
             
             # Create alerts for missed doses
             for med in missed_medications:
-                existing_alert = Alert.query.filter(
-                    Alert.patient_id == patient_id,
-                    Alert.alert_type == 'medication',
-                    Alert.message.contains(med.medication_name),
-                    Alert.resolved_at == None
-                ).first()
+                existing_alert = get_db_session().execute(
+                    select(Alert).where(
+                        Alert.patient_id == patient_id,
+                        Alert.alert_type == 'medication',
+                        Alert.message.contains(med.medication_name),
+                        Alert.resolved_at == None
+                    )
+                ).scalars().first()
                 
                 if not existing_alert:
                     alert = Alert(

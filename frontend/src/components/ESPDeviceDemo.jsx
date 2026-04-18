@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bluetooth, AlertCircle, CheckCircle } from 'lucide-react';
+import { espDeviceService } from '../services/api';
 
 /**
  * ESPDeviceDemo Component
@@ -26,16 +27,10 @@ export const ESPDeviceDemo = () => {
 
   const fetchDeviceStatus = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/esp-device/status', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setConnected(data.connected);
-        setDeviceInfo(data);
-      }
+      const response = await espDeviceService.getStatus();
+      const data = response.data;
+      setConnected(data.connected);
+      setDeviceInfo(data);
     } catch (err) {
       console.error('Failed to fetch device status:', err);
     }
@@ -46,22 +41,10 @@ export const ESPDeviceDemo = () => {
     setError(null);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/esp-device/connect', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          device_id: `ESP32-${Date.now()}`,
-          connection_method: 'bluetooth'
-        })
-      });
+      const response = await espDeviceService.connect(`ESP32-${Date.now()}`);
+      const data = response.data;
 
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (response.status >= 200 && response.status < 300) {
         // In demo mode, show instructions instead of false connection
         setShowInstructions(true);
       } else {
@@ -79,11 +62,7 @@ export const ESPDeviceDemo = () => {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      await fetch('/api/esp-device/disconnect', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      await espDeviceService.disconnect();
       
       setConnected(false);
       setShowInstructions(false);
