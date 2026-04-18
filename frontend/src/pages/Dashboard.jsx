@@ -5,7 +5,7 @@ import { HealthSummary } from '../components/HealthSummary';
 import { RiskScoreChart } from '../components/RiskScoreChart';
 import { MedicationTracker } from '../components/MedicationTracker';
 import { AlertPanel } from '../components/AlertPanel';
-import { LogOut } from 'lucide-react';
+import { LogOut, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
@@ -82,13 +82,22 @@ export const Dashboard = () => {
               {patientData?.name || 'Patient'} • Patient Health Monitoring & Medication Tracking
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/health-input')}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              <Plus className="w-4 h-4" />
+              Record Vitals
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
