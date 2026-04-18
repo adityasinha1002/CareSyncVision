@@ -70,14 +70,6 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     SQLALCHEMY_ECHO = False
-    
-    # Convert postgresql:// to postgresql+psycopg:// for psycopg v3 driver
-    @property
-    def SQLALCHEMY_DATABASE_URI(self):
-        db_url = os.getenv('DATABASE_URL', '')
-        if db_url and db_url.startswith('postgresql://'):
-            db_url = db_url.replace('postgresql://', 'postgresql+psycopg://', 1)
-        return db_url
 
 
 # Configuration dictionary
