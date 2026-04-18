@@ -2,6 +2,8 @@
 
 from __future__ import with_statement
 import logging
+import sys
+import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
@@ -13,6 +15,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 logger = logging.getLogger('alembic.env')
+
+# Add backend to path so we can import app
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 # Get the target database URL from Flask config
 from app import create_app, db
