@@ -10,7 +10,7 @@ import uuid
 
 class Patient(db.Model):
     """Patient information table"""
-    __tablename__ = 'patients'
+    __tablename__ = 'patient'
     
     patient_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(255), unique=True, nullable=True, index=True)  # Nullable for backward compatibility
