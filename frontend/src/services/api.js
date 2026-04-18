@@ -39,8 +39,16 @@ api.interceptors.response.use(
 
 // Authentication Service
 export const authService = {
-  login: (patientId, password) =>
-    api.post('/auth/login', { patient_id: patientId, password }),
+  register: (email, password, firstName, lastName) =>
+    api.post('/auth/register', { 
+      email, 
+      password, 
+      first_name: firstName, 
+      last_name: lastName 
+    }),
+
+  login: (email, password) =>
+    api.post('/auth/login', { email, password }),
   
   verify: () =>
     api.get('/auth/verify'),

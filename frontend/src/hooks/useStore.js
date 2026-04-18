@@ -12,28 +12,32 @@ export const useAuthStore = create((set) => ({
   initialize: () => {
     const token = localStorage.getItem('jwtToken');
     const patientId = localStorage.getItem('patientId');
+    const email = localStorage.getItem('email');
+    const name = localStorage.getItem('name');
     if (token && patientId) {
       set({ 
         token, 
-        user: { patient_id: patientId }, 
+        user: { patient_id: patientId, email, name }, 
         isAuthenticated: true 
       });
     }
   },
   
-  login: async (patientId, password) => {
+  login: async (email, password) => {
     set({ loading: true, error: null });
     try {
-      const response = await authService.login(patientId, password);
-      const { token } = response.data;
+      const response = await authService.login(email, password);
+      const { token, patient_id, name } = response.data;
       
       // Store token and user info
       authService.setToken(token);
-      localStorage.setItem('patientId', patientId);
+      localStorage.setItem('patientId', patient_id);
+      localStorage.setItem('email', email);
+      localStorage.setItem('name', name);
       
       set({ 
         token, 
-        user: { patient_id: patientId },
+        user: { patient_id, email, name },
         isAuthenticated: true,
         loading: false 
       });
@@ -49,6 +53,8 @@ export const useAuthStore = create((set) => ({
   logout: () => {
     authService.clearToken();
     localStorage.removeItem('patientId');
+    localStorage.removeItem('email');
+    localStorage.removeItem('name');
     set({ user: null, token: null, isAuthenticated: false, error: null });
   },
   

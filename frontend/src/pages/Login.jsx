@@ -4,7 +4,7 @@ import { useAuthStore } from '../hooks/useStore';
 import { Heart } from 'lucide-react';
 
 export const Login = () => {
-  const [patientId, setPatientId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { login, loading, error, isAuthenticated } = useAuthStore();
@@ -17,11 +17,11 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!patientId || !password) {
+    if (!email || !password) {
       return;
     }
 
-    const result = await login(patientId, password);
+    const result = await login(email, password);
     if (result.success) {
       navigate('/dashboard');
     }
@@ -57,13 +57,13 @@ export const Login = () => {
             )}
 
             <div>
-              <label className="label">Patient ID</label>
+              <label className="label">Email</label>
               <input
-                type="text"
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="input-field"
-                placeholder="Enter your patient ID"
+                placeholder="you@example.com"
                 disabled={loading}
               />
             </div>
@@ -82,21 +82,26 @@ export const Login = () => {
 
             <button
               type="submit"
-              disabled={loading || !patientId || !password}
+              disabled={loading || !email || !password}
               className="btn-primary w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          <div className="mt-4 text-center text-gray-600 text-sm">
+            <p>Don't have an account? <button onClick={() => navigate('/register')} className="text-primary-600 font-semibold hover:underline">Sign up</button></p>
+          </div>
         </div>
 
         {/* Demo Info */}
         <div className="mt-6 card bg-gradient-to-r from-primary-50 to-primary-100 border-primary-200">
-          <p className="text-sm font-semibold text-primary-900 mb-3">Demo Credentials:</p>
-          <div className="space-y-2 text-sm text-primary-800 font-mono">
-            <p><span className="font-semibold">Patient ID:</span> 4d8a9d39-ed16-4a74-a49d-b425cd3d7dda</p>
-            <p><span className="font-semibold">Password:</span> password</p>
+          <p className="text-sm font-semibold text-primary-900 mb-3">Test with Demo Account:</p>
+          <div className="space-y-2 text-sm text-primary-800">
+            <p><span className="font-semibold">Email:</span> demo@example.com</p>
+            <p><span className="font-semibold">Password:</span> DemoPass123</p>
           </div>
+          <p className="text-xs text-primary-700 mt-3">Or create a new account to get started</p>
         </div>
       </div>
     </div>
