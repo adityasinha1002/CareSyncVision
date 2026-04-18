@@ -5,12 +5,23 @@ Business logic for medication tracking and adherence
 
 import logging
 from datetime import datetime, timedelta
+from flask import current_app
 from .. import db
 from app.models.medication_model import Medication
 from app.models.patient_model import Patient
 from app.models.session_alert_model import Alert
 
 logger = logging.getLogger(__name__)
+
+
+def get_db_session():
+    """Get database session from current app context"""
+    try:
+        # Try to get session from current app extensions
+        return current_app.extensions['sqlalchemy'].session
+    except:
+        # Fallback to global get_db_session()
+        return get_db_session()
 
 
 class MedicationService:
@@ -47,8 +58,8 @@ class MedicationService:
                 adherence_status='pending'
             )
             
-            db.session.add(med)
-            db.session.commit()
+            get_db_session().add(med)
+            get_db_session().commit()
             
             logger.info(f"Created medication {med.med_id} for patient {patient_id}: {medication_name}")
             
@@ -60,7 +71,7 @@ class MedicationService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error creating medication: {str(e)}", exc_info=True)
             return {'success': False, 'error': str(e)}
     
@@ -90,7 +101,7 @@ class MedicationService:
             # Mark as taken
             med.mark_taken(notes=medication_data.get('notes'))
             
-            db.session.commit()
+            get_db_session().commit()
             
             logger.info(f"Recorded medication {med_id} for patient {patient_id}")
             
@@ -102,7 +113,7 @@ class MedicationService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error recording medication: {str(e)}", exc_info=True)
             return {'success': False, 'error': str(e)}
     
@@ -238,10 +249,10 @@ class MedicationService:
                         severity='high',
                         message=f'Missed dose: {med.medication_name} ({med.dosage})'
                     )
-                    db.session.add(alert)
+                    get_db_session().add(alert)
                     med.adherence_status = 'missed'
             
-            db.session.commit()
+            get_db_session().commit()
             
             logger.info(f"Checked missed doses for patient {patient_id}: {len(missed_medications)} missed")
             
@@ -253,7 +264,7 @@ class MedicationService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error checking missed doses: {str(e)}", exc_info=True)
             return {'success': False, 'error': str(e)}
     

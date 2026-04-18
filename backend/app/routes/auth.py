@@ -3,7 +3,7 @@ Authentication Routes
 Login, token generation, and access control
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import logging
 import re
@@ -15,6 +15,16 @@ from .. import db
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def get_db_session():
+    """Get database session from current app context"""
+    try:
+        # Try to get session from current app extensions
+        return current_app.extensions['sqlalchemy'].session
+    except:
+        # Fallback to global db.session
+        return db.session
 
 
 def validate_email(email):
@@ -80,7 +90,7 @@ def register():
             return jsonify({"error": message}), 400
         
         # Check if email already exists
-        result = db.session.execute(select(Patient).where(Patient.email == email))
+        result = get_db_session().execute(select(Patient).where(Patient.email == email))
         existing_patient = result.scalar_one_or_none()
         if existing_patient:
             logger.warning(f"Registration failed: Email {email} already exists")
@@ -99,11 +109,12 @@ def register():
         
         # Save to database
         try:
-            db.session.add(patient)
-            db.session.commit()
+            session = get_db_session()
+            session.add(patient)
+            session.commit()
             logger.info(f"New patient registered: {email} (ID: {patient.patient_id})")
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error saving patient to database: {str(e)}", exc_info=True)
             return jsonify({"error": "Failed to create account"}), 500
         
@@ -160,7 +171,7 @@ def login():
         
         # Email-based login (new method)
         if email:
-            result = db.session.execute(select(Patient).where(Patient.email == email))
+            result = get_db_session().execute(select(Patient).where(Patient.email == email))
             patient = result.scalar_one_or_none()
             if not patient:
                 logger.warning(f"Login failed: Patient with email {email} not found")
@@ -172,7 +183,7 @@ def login():
         
         # Legacy patient_id login (for backward compatibility)
         elif patient_id:
-            result = db.session.execute(select(Patient).where(Patient.patient_id == patient_id))
+            result = get_db_session().execute(select(Patient).where(Patient.patient_id == patient_id))
             patient = result.scalar_one_or_none()
             if not patient:
                 logger.warning(f"Login failed: Patient {patient_id} not found")

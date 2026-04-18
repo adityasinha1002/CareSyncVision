@@ -6,12 +6,23 @@ Business logic for patient health data processing and management
 import logging
 import os
 from datetime import datetime, timedelta
+from flask import current_app
 from .. import db
 from app.models.patient_model import Patient
 from app.models.health_record_model import HealthRecord
 from app.models.session_alert_model import Alert
 
 logger = logging.getLogger(__name__)
+
+
+def get_db_session():
+    """Get database session from current app context"""
+    try:
+        # Try to get session from current app extensions
+        return current_app.extensions['sqlalchemy'].session
+    except:
+        # Fallback to global db.session
+        return db.session
 
 
 class PatientService:
@@ -44,8 +55,8 @@ class PatientService:
                 contact_info=contact_info or {}
             )
             
-            db.session.add(patient)
-            db.session.commit()
+            get_db_session().add(patient)
+            get_db_session().commit()
             
             logger.info(f"Created patient {patient.patient_id}: {name}")
             
@@ -57,7 +68,7 @@ class PatientService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error creating patient: {str(e)}", exc_info=True)
             return {'success': False, 'error': str(e)}
     
@@ -136,7 +147,7 @@ class PatientService:
                 if field in allowed_fields:
                     setattr(patient, field, value)
             
-            db.session.commit()
+            get_db_session().commit()
             logger.info(f"Updated patient {patient_id}")
             
             return {
@@ -146,7 +157,7 @@ class PatientService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error updating patient: {str(e)}", exc_info=True)
             return {'success': False, 'error': str(e)}
     
@@ -194,8 +205,8 @@ class PatientService:
             # Create alerts if needed
             self._check_and_create_alerts(patient_id, risk_score)
             
-            db.session.add(record)
-            db.session.commit()
+            get_db_session().add(record)
+            get_db_session().commit()
             
             logger.info(f"Processed health data for patient {patient_id} - Risk: {risk_score}")
             
@@ -210,7 +221,7 @@ class PatientService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error processing patient data: {str(e)}", exc_info=True)
             return {
                 'status_code': 500,
@@ -252,8 +263,8 @@ class PatientService:
             risk_score = self._calculate_risk_from_vitals(vitals_data)
             record.risk_score = risk_score
             
-            db.session.add(record)
-            db.session.commit()
+            get_db_session().add(record)
+            get_db_session().commit()
             
             logger.info(f"Processing vitals for patient {patient_id}")
             
@@ -266,7 +277,7 @@ class PatientService:
             }
         
         except Exception as e:
-            db.session.rollback()
+            get_db_session().rollback()
             logger.error(f"Error processing vitals: {str(e)}", exc_info=True)
             return {'success': False, 'error': str(e)}
     
@@ -393,11 +404,11 @@ class PatientService:
                         severity=severity,
                         message=f'High health risk detected (Score: {risk_score})'
                     )
-                    db.session.add(alert)
+                    get_db_session().add(alert)
             
-            db.session.commit()
+            get_db_session().commit()
         
         except Exception as e:
             logger.warning(f"Error creating alerts: {str(e)}")
-            db.session.rollback()
+            get_db_session().rollback()
 

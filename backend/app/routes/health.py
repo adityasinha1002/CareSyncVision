@@ -2,7 +2,7 @@
 Health Records and Vital Data Routes
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from datetime import datetime
 from functools import wraps
 import logging
@@ -15,6 +15,16 @@ import os
 logger = logging.getLogger(__name__)
 
 health_bp = Blueprint('health', __name__)
+
+
+def get_db_session():
+    """Get database session from current app context"""
+    try:
+        # Try to get session from current app extensions
+        return current_app.extensions['sqlalchemy'].session
+    except:
+        # Fallback to global db.session
+        return db.session
 
 
 # JWT Token Verification
@@ -152,8 +162,9 @@ def submit_vitals(current_patient_id):
             timestamp=datetime.utcnow()
         )
         
-        db.session.add(health_record)
-        db.session.commit()
+        session = get_db_session()
+        session.add(health_record)
+        session.commit()
         
         logger.info(f"Vital signs recorded for patient {current_patient_id}")
         
@@ -164,7 +175,7 @@ def submit_vitals(current_patient_id):
         }), 201
     
     except Exception as e:
-        db.session.rollback()
+        get_db_session().rollback()
         logger.error(f"Error submitting vitals: {str(e)}")
         return jsonify({'error': 'Failed to save vital signs'}), 500
 
