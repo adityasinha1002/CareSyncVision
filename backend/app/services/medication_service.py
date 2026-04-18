@@ -20,8 +20,8 @@ def get_db_session():
         # Try to get session from current app extensions
         return current_app.extensions['sqlalchemy'].session
     except:
-        # Fallback to global get_db_session()
-        return get_db_session()
+        # Fallback to global db.session
+        return db.session
 
 
 class MedicationService:
