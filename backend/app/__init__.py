@@ -29,23 +29,20 @@ def create_app(config=None):
     Application factory function
     Creates and configures the Flask app
     """
+    from app.config import config as config_dict
+    
     app = Flask(__name__)
     
-    # Configuration
+    # Determine environment and load config
+    env = os.getenv('FLASK_ENV', 'development')
+    ConfigClass = config_dict.get(env, config_dict['default'])
+    app.config.from_object(ConfigClass)
+    
+    # Override with environment variables
     app.config.update(
-        DEBUG=os.getenv('FLASK_DEBUG', 'False') == 'True',
-        TESTING=os.getenv('TESTING', 'False') == 'True',
-        SECRET_KEY=os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production'),
-        MAX_CONTENT_LENGTH=int(os.getenv('MAX_IMAGE_SIZE', 5242880)),  # 5MB default
-        UPLOAD_FOLDER=os.path.join(os.path.dirname(__file__), '../uploads'),
-        JSON_SORT_KEYS=False,
-        JSONIFY_PRETTYPRINT_REGULAR=False,
-        # Database configuration
-        SQLALCHEMY_DATABASE_URI=os.getenv(
-            'DATABASE_URL',
-            'postgresql://caresynvision:caresynvision@localhost:5432/caresynvision'
-        ),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SECRET_KEY=os.getenv('FLASK_SECRET_KEY', app.config.get('SECRET_KEY')),
+        MAX_CONTENT_LENGTH=int(os.getenv('MAX_IMAGE_SIZE', 5242880)),
+        SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL', app.config.get('SQLALCHEMY_DATABASE_URI')),
     )
     
     # Override config with passed dict if provided
