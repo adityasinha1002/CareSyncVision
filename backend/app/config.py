@@ -14,6 +14,13 @@ class Config:
     TESTING = False
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-key-change-this')
     
+    # Database settings
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL',
+        'postgresql://caresynvision:caresynvision@localhost:5432/caresynvision'
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
     # Upload settings
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../uploads')
     MAX_CONTENT_LENGTH = int(os.getenv('MAX_IMAGE_SIZE', 5242880))  # 5MB
@@ -49,6 +56,8 @@ class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
     TESTING = False
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', '')
+    SQLALCHEMY_ECHO = False
 
 
 # Configuration dictionary

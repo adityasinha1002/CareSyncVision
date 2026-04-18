@@ -7,6 +7,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import logging
 import os
+import tempfile
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -52,12 +53,23 @@ def create_app(config=None):
         app.config.update(config)
     
     # Create upload folder if it doesn't exist
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    # Use /tmp in production (Render), local in development
+    if os.getenv('FLASK_ENV') == 'production':
+        app.config['UPLOAD_FOLDER'] = os.path.join(tempfile.gettempdir(), 'caresynvision_uploads')
+    else:
+        app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), '../uploads')
+    
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        logger.info(f"Upload folder ready: {app.config['UPLOAD_FOLDER']}")
+    except Exception as e:
+        logger.warning(f"Could not create upload folder: {e}")
     
     # Enable CORS with environment-based origins
     cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
-    cors_origins = [origin.strip() for origin in cors_origins]  # Clean whitespace
-    CORS(app, origins=cors_origins, supports_credentials=True)
+    cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]  # Clean whitespace
+    logger.info(f"CORS origins configured: {cors_origins}")
+    CORS(app, origins=cors_origins, supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
     
     # Initialize database
     db.init_app(app)
@@ -85,10 +97,21 @@ def create_app(config=None):
             # Create all tables
             db.create_all()
             logger.info("Database tables created/verified successfully")
+        except ImportError as e:
+            logger.error(f"Failed to import models: {str(e)}")
+            if os.getenv('FLASK_ENV') == 'production':
+                raise
         except Exception as e:
-            logger.warning(f"Database initialization warning: {str(e)}")
-            # This is non-fatal - database might not be ready yet in dev
+            logger.error(f"Database initialization error: {str(e)}", exc_info=True)
+            if os.getenv('FLASK_ENV') == 'production':
+                raise
+            else:
+                logger.warning("Continuing in development mode despite database error")
     
-    logger.info("CareSyncVision Flask app initialized")
+    logger.info(f"CareSyncVision Flask app initialized (env={os.getenv('FLASK_ENV', 'development')})")
     
     return app
+
+
+# Export for module-level access
+__all__ = ['create_app', 'db']
