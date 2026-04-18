@@ -105,6 +105,7 @@ def create_app(config=None):
         from app.routes.patient import patient_bp
         from app.routes.medication import medication_bp
         from app.routes.auth import auth_bp
+        from app.routes.esp_device import esp_bp
         logger.info("Blueprints imported successfully")
     except ImportError as e:
         logger.error(f"Failed to import blueprints: {e}")
@@ -120,6 +121,8 @@ def create_app(config=None):
         logger.info("patient_bp registered")
         app.register_blueprint(medication_bp, url_prefix='/api')
         logger.info("medication_bp registered")
+        app.register_blueprint(esp_bp, url_prefix='/api')
+        logger.info("esp_bp registered")
     except Exception as e:
         logger.error(f"Failed to register blueprints: {e}")
         raise

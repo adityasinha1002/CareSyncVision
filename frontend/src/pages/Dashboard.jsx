@@ -5,6 +5,7 @@ import { HealthSummary } from '../components/HealthSummary';
 import { RiskScoreChart } from '../components/RiskScoreChart';
 import { MedicationTracker } from '../components/MedicationTracker';
 import { AlertPanel } from '../components/AlertPanel';
+import { ESPDeviceDemo } from '../components/ESPDeviceDemo';
 import { LogOut, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -129,6 +130,11 @@ export const Dashboard = () => {
         {/* Medication Tracker */}
         <div className="mt-6">
           <MedicationTracker medications={medications} patientId={user?.patient_id} />
+        </div>
+
+        {/* ESP32 Device Demo - Coming Soon Feature */}
+        <div className="mt-6">
+          <ESPDeviceDemo />
         </div>
       </main>
     </div>

@@ -1,21 +1,23 @@
 version: '3.8'
 
 services:
-  ai-server:
+  # Backend API Service
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
       - FLASK_ENV=production
+      - DATABASE_URL=postgresql://caresynvision:caresynvision@postgres:5432/caresynvision
+      - FLASK_SECRET_KEY=change-this-in-production
       - PYTHONUNBUFFERED=1
-      # Add your custom environment variables here
-      # - API_SESSION_TIMEOUT=3600
-      # - MAX_IMAGE_SIZE=5242880
+    depends_on:
+      - postgres
     volumes:
-      - ./ai-server/uploads:/app/uploads
-      - ./ai-server/ai-server/models:/app/ai-server/models
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
@@ -25,6 +27,25 @@ services:
       start_period: 40s
     networks:
       - caresynvision-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=caresynvision
+      - POSTGRES_PASSWORD=caresynvision
+      - POSTGRES_DB=caresynvision
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - caresynvision-network
+
+volumes:
+  postgres_data:
 
 networks:
   caresynvision-network:

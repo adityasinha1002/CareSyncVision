@@ -119,4 +119,19 @@ export const medicationService = {
     api.get(`/patient/${patientId}/medication/missed`),
 };
 
+// ESP32 Device Integration Service (Demo Mode)
+export const espDeviceService = {
+  getStatus: () =>
+    api.get('/esp-device/status'),
+  
+  connect: (deviceId, connectionMethod = 'bluetooth') =>
+    api.post('/esp-device/connect', { device_id: deviceId, connection_method: connectionMethod }),
+  
+  disconnect: () =>
+    api.post('/esp-device/disconnect'),
+  
+  getFirmwareInfo: () =>
+    api.get('/esp-device/firmware'),
+};
+
 export default api;
