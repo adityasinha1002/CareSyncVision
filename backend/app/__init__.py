@@ -155,6 +155,14 @@ def create_app(config=None):
             from app.models.session_alert_model import Session, Alert
             
             logger.info("Database models loaded successfully")
+
+            # Ensure the current ORM schema exists even if a deployment missed a migration step.
+            # This is a safe no-op when the tables are already present.
+            try:
+                db.create_all()
+                logger.info("Database tables ensured successfully")
+            except Exception as create_err:
+                logger.warning(f"Could not ensure database tables: {str(create_err)}")
             
             # With Flask-Migrate, tables are created via 'flask db upgrade' command
             # This is called in render.yaml startCommand or during local setup
