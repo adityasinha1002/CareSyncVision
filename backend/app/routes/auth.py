@@ -80,7 +80,7 @@ def register():
             return jsonify({"error": message}), 400
         
         # Check if email already exists
-        result = db.session.execute(select(Patient).filter_by(email=email))
+        result = db.session.execute(select(Patient).where(Patient.email == email))
         existing_patient = result.scalar_one_or_none()
         if existing_patient:
             logger.warning(f"Registration failed: Email {email} already exists")
@@ -160,7 +160,7 @@ def login():
         
         # Email-based login (new method)
         if email:
-            result = db.session.execute(select(Patient).filter_by(email=email))
+            result = db.session.execute(select(Patient).where(Patient.email == email))
             patient = result.scalar_one_or_none()
             if not patient:
                 logger.warning(f"Login failed: Patient with email {email} not found")
@@ -172,7 +172,7 @@ def login():
         
         # Legacy patient_id login (for backward compatibility)
         elif patient_id:
-            result = db.session.execute(select(Patient).filter_by(patient_id=patient_id))
+            result = db.session.execute(select(Patient).where(Patient.patient_id == patient_id))
             patient = result.scalar_one_or_none()
             if not patient:
                 logger.warning(f"Login failed: Patient {patient_id} not found")
