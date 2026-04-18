@@ -6,7 +6,6 @@ Login, token generation, and access control
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
-import os
 import re
 from sqlalchemy import select
 from app.services.auth_service import AuthService
@@ -192,7 +191,7 @@ def login():
                     return jsonify({"error": "Invalid credentials"}), 401
             else:
                 # No password set for this legacy account
-                logger.warning(f"Login failed: No password set for legacy patient {patient_id}")
+                logger.warning("Login failed: No password set for legacy patient account")
                 return jsonify({"error": "Invalid credentials"}), 401
         
         # Generate JWT token
@@ -279,16 +278,8 @@ def refresh_token():
             return jsonify({'error': 'Token is missing'}), 401
         
         # Decode token, verifying signature but ignoring expiry
-        try:
-            import jwt
-            secret = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
-            payload = jwt.decode(
-                token,
-                secret,
-                algorithms=['HS256'],
-                options={"verify_exp": False}
-            )
-        except jwt.InvalidTokenError:
+        payload = AuthService.decode_token_allow_expired(token)
+        if not payload:
             return jsonify({'error': 'Invalid token'}), 401
         
         patient_id = payload.get('patient_id')

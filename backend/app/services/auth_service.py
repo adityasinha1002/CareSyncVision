@@ -79,7 +79,28 @@ class AuthService:
             return None
     
     @staticmethod
-    def hash_password(password):
+    def decode_token_allow_expired(token):
+        """
+        Decode a JWT token verifying the signature but ignoring expiry.
+        Used exclusively by the refresh endpoint so that clients with a
+        recently-expired (but legitimately-issued) token can obtain a new one.
+
+        Args:
+            token (str): JWT token (may be expired)
+
+        Returns:
+            dict: Token payload, or None if the signature is invalid
+        """
+        try:
+            return jwt.decode(
+                token,
+                JWT_SECRET,
+                algorithms=[JWT_ALGORITHM],
+                options={"verify_exp": False}
+            )
+        except jwt.InvalidTokenError as e:
+            logger.warning(f"Token decode failed: {str(e)}")
+            return None
         """Hash password using werkzeug"""
         return generate_password_hash(password, method='pbkdf2:sha256')
     

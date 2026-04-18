@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify, current_app, g
 from datetime import datetime
 import logging
 import os
+import re
 import uuid
 from app.services.patient_service import PatientService
 from app.middleware.validation import validate_patient_headers
@@ -156,9 +157,10 @@ def receive_health_data():
             logger.warning(f"Oversized health data from patient {patient_id}")
             return jsonify({"error": "File too large"}), 413
         
-        # Save image
+        # Save image — sanitise patient_id so it cannot contain path components
         health_id = str(uuid.uuid4())[:8]
-        image_filename = f"health_{patient_id}_{health_id}_{int(datetime.utcnow().timestamp()*1000)}.jpg"
+        safe_patient_id = re.sub(r'[^a-zA-Z0-9_-]', '_', patient_id)
+        image_filename = f"health_{safe_patient_id}_{health_id}_{int(datetime.utcnow().timestamp()*1000)}.jpg"
         image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_filename)
         
         with open(image_path, 'wb') as f:

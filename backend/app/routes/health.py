@@ -43,7 +43,7 @@ def service_status():
     db_status = "disconnected"
     try:
         with db.engine.connect() as conn:
-            conn.execute(db.text("SELECT 1"))
+            conn.exec_driver_sql("SELECT 1")
         db_status = "connected"
     except Exception:
         pass
@@ -153,7 +153,7 @@ def submit_vitals():
         }
         session.commit()
 
-        logger.info(f"Vital signs recorded for patient {current_patient_id}")
+        logger.info("Vital signs recorded successfully")
 
         return jsonify({
             'success': True,
