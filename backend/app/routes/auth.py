@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 import re
+from sqlalchemy import select
 from app.services.auth_service import AuthService
 from app.models.patient_model import Patient
 from app import db
@@ -79,7 +80,8 @@ def register():
             return jsonify({"error": message}), 400
         
         # Check if email already exists
-        existing_patient = Patient.query.filter_by(email=email).first()
+        result = db.session.execute(select(Patient).filter_by(email=email))
+        existing_patient = result.scalar_one_or_none()
         if existing_patient:
             logger.warning(f"Registration failed: Email {email} already exists")
             return jsonify({"error": "Email already registered"}), 409
@@ -158,7 +160,8 @@ def login():
         
         # Email-based login (new method)
         if email:
-            patient = Patient.query.filter_by(email=email).first()
+            result = db.session.execute(select(Patient).filter_by(email=email))
+            patient = result.scalar_one_or_none()
             if not patient:
                 logger.warning(f"Login failed: Patient with email {email} not found")
                 return jsonify({"error": "Invalid email or password"}), 401
@@ -169,7 +172,8 @@ def login():
         
         # Legacy patient_id login (for backward compatibility)
         elif patient_id:
-            patient = Patient.query.get(patient_id)
+            result = db.session.execute(select(Patient).filter_by(patient_id=patient_id))
+            patient = result.scalar_one_or_none()
             if not patient:
                 logger.warning(f"Login failed: Patient {patient_id} not found")
                 return jsonify({"error": "Invalid credentials"}), 401
