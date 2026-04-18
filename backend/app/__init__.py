@@ -168,6 +168,12 @@ def create_app(config=None):
             # Don't raise - migrations will handle db setup on deploy
     
     
+    # Register teardown for session cleanup (Flask-SQLAlchemy 3.0 compatibility)
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        """Clean up database session after request"""
+        db.session.remove()
+    
     logger.info(f"CareSyncVision Flask app initialized (env={os.getenv('FLASK_ENV', 'development')})")
     
     return app
