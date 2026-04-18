@@ -15,7 +15,7 @@ services:
       - key: DATABASE_URL
         value: ${DATABASE_URL}
       - key: CORS_ORIGINS
-        value: http://localhost:3000
+        value: https://caresynvision.netlify.app
       - key: RISK_LOW_THRESHOLD
         value: "30"
       - key: RISK_HIGH_THRESHOLD
