@@ -86,7 +86,7 @@ def create_app(config=None):
     cors_origins = [
         'http://localhost:3000',
         'http://localhost:5000',
-        'https://caresyncvision.netlify.app',
+        'https://caresyncvision.vercel.app',  # Vercel production frontend
     ]
     env_cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
     cors_origins.extend(env_cors_origins)
