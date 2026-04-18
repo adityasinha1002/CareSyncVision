@@ -22,10 +22,18 @@ export default function Hero() {
           Real-time health analysis, medication tracking, and predictive insights designed for caregivers and patients who demand excellence.
         </p>
 
-        <button className="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-soft">
-          Get Started
-          <ArrowRight className="w-5 h-5" />
-        </button>
+        <section className="dashboard-card text-center border-primary py-16 px-4">
+          <h1 className="text-4xl font-extrabold mb-4 text-primary">CareSyncVision</h1>
+          <p className="text-lg text-gray-700 mb-6">
+            AI-powered health monitoring and medication management for modern care teams.
+          </p>
+          <a
+            href="#dashboard"
+            className="inline-block bg-primary text-white px-8 py-3 rounded-lg font-semibold text-lg shadow hover:bg-primary/90 transition"
+          >
+            Get Started
+          </a>
+        </section>
       </div>
     </div>
   );

@@ -33,55 +33,47 @@ export const HealthSummary = ({ data, adherenceMetrics }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
       {/* Risk Score Card */}
-      <div className={`${getRiskBgColor(riskScore)} rounded-lg shadow p-4`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Risk Score</p>
-            <p className={`text-3xl font-bold ${getRiskColor(riskScore)}`}>{riskScore}</p>
-            <p className="text-xs text-gray-500 mt-1">
-              {riskScore >= 70 ? 'Critical' : riskScore >= 50 ? 'High' : riskScore >= 30 ? 'Medium' : 'Low'}
-            </p>
-          </div>
-          <TrendingUp className="w-8 h-8 text-gray-400" />
+      <div className="dashboard-card flex flex-col justify-between border-primary">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-600">Risk Score</span>
+          <TrendingUp className="w-7 h-7 text-primary" />
+        </div>
+        <div className="text-3xl font-bold text-primary">{riskScore}</div>
+        <div className="text-xs text-gray-500 mt-1">
+          {riskScore >= 70 ? 'Critical' : riskScore >= 50 ? 'High' : riskScore >= 30 ? 'Medium' : 'Low'}
         </div>
       </div>
 
       {/* Patient Info */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Patient Age</p>
-            <p className="text-3xl font-bold text-blue-600">{data.age || '--'}</p>
-            <p className="text-xs text-gray-500 mt-1">years old</p>
-          </div>
-          <Clock className="w-8 h-8 text-gray-400" />
+      <div className="dashboard-card flex flex-col justify-between border-primary">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-600">Patient Age</span>
+          <Clock className="w-7 h-7 text-primary" />
         </div>
+        <div className="text-3xl font-bold text-primary">{data.age || '--'}</div>
+        <div className="text-xs text-gray-500 mt-1">years old</div>
       </div>
 
       {/* Medication Adherence */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Adherence Rate</p>
-            <p className="text-3xl font-bold text-green-600">{Math.round(adherencePercent)}%</p>
-            <p className="text-xs text-gray-500 mt-1">
-              {adherenceMetrics?.doses_taken || 0}/{adherenceMetrics?.total_doses || 0} doses
-            </p>
-          </div>
-          <CheckCircle className="w-8 h-8 text-gray-400" />
+      <div className="dashboard-card flex flex-col justify-between border-primary">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-600">Adherence Rate</span>
+          <CheckCircle className="w-7 h-7 text-primary" />
+        </div>
+        <div className="text-3xl font-bold text-primary">{Math.round(adherencePercent)}%</div>
+        <div className="text-xs text-gray-500 mt-1">
+          {adherenceMetrics?.doses_taken || 0}/{adherenceMetrics?.total_doses || 0} doses
         </div>
       </div>
 
       {/* Last Check-in */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Last Update</p>
-            <p className="text-lg font-semibold">{timeAgo}</p>
-            <p className="text-xs text-gray-500 mt-1">{data.recent_records_count || 0} records</p>
-          </div>
-          <TrendingUp className="w-8 h-8 text-gray-400" />
+      <div className="dashboard-card flex flex-col justify-between border-primary">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-600">Last Update</span>
+          <TrendingUp className="w-7 h-7 text-primary" />
         </div>
+        <div className="text-lg font-semibold text-primary">{timeAgo}</div>
+        <div className="text-xs text-gray-500 mt-1">{data.recent_records_count || 0} records</div>
       </div>
     </div>
   );

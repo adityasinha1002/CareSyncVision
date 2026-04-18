@@ -75,22 +75,21 @@ export const ESPDeviceDemo = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+    <div className="dashboard-card border-primary">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-100 p-3 rounded-full">
-            <Bluetooth className="w-6 h-6 text-blue-600" />
+          <div className="bg-primary/10 p-3 rounded-full">
+            <Bluetooth className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">ESP32 Device</h3>
+            <h3 className="text-lg font-semibold text-primary">ESP32 Device</h3>
             <p className="text-sm text-gray-600">Demo Mode - Coming Soon</p>
           </div>
         </div>
-        
         {connected ? (
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <span className="text-green-600 font-medium">Connected</span>
+            <CheckCircle className="w-5 h-5 text-primary" />
+            <span className="text-primary font-medium">Connected</span>
           </div>
         ) : (
           <div className="flex items-center gap-2">
@@ -108,7 +107,7 @@ export const ESPDeviceDemo = () => {
 
       {/* Device Info */}
       {deviceInfo && !connected && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded text-sm text-primary">
           <p className="font-medium">Device ID: {deviceInfo.device_id}</p>
           <p className="text-xs mt-1">{deviceInfo.message}</p>
         </div>
@@ -116,9 +115,9 @@ export const ESPDeviceDemo = () => {
 
       {/* Connection Instructions */}
       {showInstructions && (
-        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded">
-          <h4 className="font-semibold text-amber-900 mb-2">Setup Instructions</h4>
-          <ol className="text-sm text-amber-800 space-y-2 list-decimal list-inside">
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+          <h4 className="font-semibold text-yellow-900 mb-2">Setup Instructions</h4>
+          <ol className="text-sm text-yellow-800 space-y-2 list-decimal list-inside">
             <li>Download the ESP32 firmware from the provided link</li>
             <li>Flash the firmware to your ESP32 board using Arduino IDE</li>
             <li>Power on the ESP32 device</li>
@@ -128,19 +127,18 @@ export const ESPDeviceDemo = () => {
             <li>Grant permissions for health sensor access</li>
             <li>Wait for data synchronization to complete</li>
           </ol>
-          
           <div className="mt-4 space-y-2">
             <a
               href="https://github.com/adityasinha1002/CareSyncVision/tree/main/ESP32_Main"
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center px-4 py-2 bg-amber-600 text-white rounded text-sm font-medium hover:bg-amber-700 transition"
+              className="block text-center px-4 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90 transition"
             >
               Download ESP32 Firmware
             </a>
             <a
               href="/docs/esp32-setup"
-              className="block text-center px-4 py-2 bg-white border border-amber-300 text-amber-700 rounded text-sm font-medium hover:bg-amber-50 transition"
+              className="block text-center px-4 py-2 bg-white border border-primary text-primary rounded text-sm font-medium hover:bg-primary/5 transition"
             >
               View Complete Setup Guide
             </a>
@@ -153,11 +151,11 @@ export const ESPDeviceDemo = () => {
         <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
           <div className="bg-white rounded p-2 border border-gray-100">
             <p className="text-xs text-gray-500">Battery Level</p>
-            <p className="font-semibold text-gray-800">{deviceInfo.battery_level}%</p>
+            <p className="font-semibold text-primary">{deviceInfo.battery_level}%</p>
           </div>
           <div className="bg-white rounded p-2 border border-gray-100">
             <p className="text-xs text-gray-500">Signal Strength</p>
-            <p className="font-semibold text-gray-800">{deviceInfo.signal_strength}%</p>
+            <p className="font-semibold text-primary">{deviceInfo.signal_strength}%</p>
           </div>
         </div>
       )}
@@ -169,13 +167,13 @@ export const ESPDeviceDemo = () => {
             <button
               onClick={handleConnect}
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:bg-gray-400 transition"
+              className="flex-1 px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary/90 disabled:bg-gray-400 transition"
             >
               {loading ? 'Connecting...' : 'Connect Device'}
             </button>
             <button
               onClick={() => setShowInstructions(!showInstructions)}
-              className="px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded font-medium hover:bg-blue-50 transition"
+              className="px-4 py-2 bg-white text-primary border border-primary rounded font-medium hover:bg-primary/5 transition"
             >
               {showInstructions ? 'Hide' : 'Help'}
             </button>

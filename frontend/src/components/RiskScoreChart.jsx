@@ -29,7 +29,7 @@ export const RiskScoreChart = ({ data = [] }) => {
   const minRisk = Math.min(...chartData.map(d => d.risk));
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="dashboard-card">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h2 className="text-lg font-semibold">Risk Score Trend (7 Days)</h2>
@@ -37,22 +37,12 @@ export const RiskScoreChart = ({ data = [] }) => {
         </div>
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="timestamp" />
-          <YAxis domain={[0, 100]} />
-          <Tooltip 
-            formatter={(value) => [`${value}`, 'Risk Score']}
-            labelFormatter={(label) => `Time: ${label}`}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="risk" 
-            stroke="#ef4444" 
-            strokeWidth={2}
-            name="Risk"
-            isAnimationActive={true}
-          />
+        <LineChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+          <XAxis dataKey="timestamp" stroke="#9f1211" />
+          <YAxis stroke="#9f1211" />
+          <Tooltip contentStyle={{ background: '#fff', borderColor: '#9f1211', color: '#9f1211' }} />
+          <Line type="monotone" dataKey="risk_score" stroke="#9f1211" strokeWidth={3} dot={{ r: 4, fill: '#9f1211' }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

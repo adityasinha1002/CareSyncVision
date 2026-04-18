@@ -1,32 +1,32 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { patientService } from '../services/api';
-
-export const AlertPanel = ({ patientId }) => {
-  const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
-
-  useEffect(() => {
-    const loadAlerts = async () => {
-      try {
-        const response = await patientService.getPatient(patientId);
-        // Extract alerts from patient data if available
-        // For now, we'll create mock alerts based on risk score
-        const patientData = response.data.data;
-        const generatedAlerts = [];
-
-        if (patientData.current_risk_score >= 70) {
-          generatedAlerts.push({
-            alert_id: 'risk-high',
-            severity: 'critical',
-            alert_type: 'health',
-            message: 'High risk score detected. Review vitals and consider contacting healthcare provider.',
-            created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-        }
-
-        if (patientData.current_risk_score >= 50) {
+  return (
+    <div className="dashboard-card border-primary">
+      <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary">
+        <AlertCircle className="w-5 h-5 text-primary" /> Alerts
+      </h2>
+      {alerts.length === 0 ? (
+        <div className="text-gray-400">No alerts</div>
+      ) : (
+        <ul className="space-y-4">
+          {alerts.map((alert) => (
+            <li
+              key={alert.alert_id}
+              className={`border-l-4 pl-4 py-2 ${getSeverityColor(alert.severity)}`}
+            >
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-primary">{alert.alert_type}</span>
+                <span className="text-xs text-gray-400 ml-auto">{formatTimeAgo(alert.created_at)}</span>
+              </div>
+              <div className="text-gray-700">{alert.message}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
           generatedAlerts.push({
             alert_id: 'risk-medium',
             severity: 'high',

@@ -15,25 +15,26 @@ export default function Sidebar({ items }) {
         {items?.map((item, index) => {
           const Icon = iconMap[item.label] || Home;
           return (
-            <Link
-              key={index}
-              to={item.path}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors font-medium"
-            >
-              <Icon className="w-5 h-5" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer Info */}
-      <div className="p-6 border-t border-gray-200 space-y-4">
-        <div className="text-sm">
-          <p className="text-gray-600 font-medium mb-2">Need Help?</p>
-          <p className="text-gray-500 text-xs">Contact support for assistance with your health monitoring setup.</p>
-        </div>
-      </div>
-    </aside>
-  );
-}
+            return (
+              <aside className="bg-white shadow h-full w-64 flex flex-col p-6 border-r border-primary">
+                <div className="flex items-center gap-2 mb-8">
+                  <img src="/logo192.png" alt="CareSyncVision" className="w-8 h-8" />
+                  <span className="text-xl font-bold text-primary">CareSyncVision</span>
+                </div>
+                <nav className="flex-1">
+                  <ul className="space-y-4">
+                    {links.map((link) => (
+                      <li key={link.label}>
+                        <a
+                          href={link.href}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 text-primary font-semibold transition"
+                        >
+                          {link.icon}
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </aside>
+            );
