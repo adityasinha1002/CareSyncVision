@@ -2,7 +2,7 @@
 CareSyncVision Flask Application Factory
 """
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -81,16 +81,40 @@ def create_app(config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     
-    # Register blueprints (routes)
-    from app.routes.health import health_bp
-    from app.routes.patient import patient_bp
-    from app.routes.medication import medication_bp
-    from app.routes.auth import auth_bp
+    # Add root route for health check (accessible at /)
+    @app.route('/', methods=['GET'])
+    def api_root():
+        return jsonify({
+            "message": "CareSyncVision API",
+            "status": "running",
+            "version": "1.0.0"
+        }), 200
     
-    app.register_blueprint(health_bp, url_prefix='/api')
-    app.register_blueprint(auth_bp, url_prefix='/api')
-    app.register_blueprint(patient_bp, url_prefix='/api')
-    app.register_blueprint(medication_bp, url_prefix='/api')
+    # Register blueprints (routes)
+    try:
+        logger.info("Importing blueprints...")
+        from app.routes.health import health_bp
+        from app.routes.patient import patient_bp
+        from app.routes.medication import medication_bp
+        from app.routes.auth import auth_bp
+        logger.info("Blueprints imported successfully")
+    except ImportError as e:
+        logger.error(f"Failed to import blueprints: {e}")
+        raise
+    
+    try:
+        logger.info("Registering blueprints with /api prefix...")
+        app.register_blueprint(health_bp, url_prefix='/api')
+        logger.info("health_bp registered")
+        app.register_blueprint(auth_bp, url_prefix='/api')
+        logger.info("auth_bp registered")
+        app.register_blueprint(patient_bp, url_prefix='/api')
+        logger.info("patient_bp registered")
+        app.register_blueprint(medication_bp, url_prefix='/api')
+        logger.info("medication_bp registered")
+    except Exception as e:
+        logger.error(f"Failed to register blueprints: {e}")
+        raise
     
     # Initialize models and database
     with app.app_context():
