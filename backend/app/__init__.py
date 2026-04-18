@@ -42,15 +42,22 @@ def create_app(config=None):
     ConfigClass = config_dict.get(env, config_dict['default'])
     app.config.from_object(ConfigClass)
     
-    # Override with environment variables
-    db_url = os.getenv('DATABASE_URL', app.config.get('SQLALCHEMY_DATABASE_URI'))
+    # Override with environment variables - Railway provides DATABASE_URL automatically
+    db_url = os.getenv('DATABASE_URL')
+    if not db_url:
+        # Fallback to config if available
+        db_url = app.config.get('SQLALCHEMY_DATABASE_URI')
+    
     # Convert postgresql:// to postgresql+psycopg:// for psycopg v3 driver
     if db_url and db_url.startswith('postgresql://'):
         db_url = db_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     
-    # Set database URI - if not available, use a placeholder (will fail at runtime, not startup)
+    # Log database configuration status
     if db_url:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        logger.info(f"Database URL configured: {db_url[:30]}...")
+    else:
+        logger.warning("DATABASE_URL environment variable not set - database operations will fail")
     
     app.config.update(
         SECRET_KEY=os.getenv('FLASK_SECRET_KEY', app.config.get('SECRET_KEY')),
