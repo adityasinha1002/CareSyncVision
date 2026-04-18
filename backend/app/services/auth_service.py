@@ -6,11 +6,10 @@ JWT token generation, validation, and user management
 import logging
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify, g
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import os
-from . import db
 
 logger = logging.getLogger(__name__)
 
@@ -117,8 +116,8 @@ def token_required(f):
             logger.warning("Token verification failed")
             return jsonify({'error': 'Invalid or expired token'}), 401
         
-        # Add patient_id to request context
-        request.patient_id = payload.get('patient_id')
+        # Store patient_id in Flask's g object
+        g.patient_id = payload.get('patient_id')
         
         return f(*args, **kwargs)
     
