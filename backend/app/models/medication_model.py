@@ -12,7 +12,7 @@ class Medication(db.Model):
     __tablename__ = 'medications'
     
     med_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    patient_id = db.Column(db.String(36), db.ForeignKey('patients.patient_id'), nullable=False, index=True)
+    patient_id = db.Column(db.String(36), db.ForeignKey('patient.patient_id'), nullable=False, index=True)
     medication_name = db.Column(db.String(255), nullable=False, index=True)
     dosage = db.Column(db.String(100))
     frequency = db.Column(db.String(100))  # 'once_daily', 'twice_daily', 'as_needed'

@@ -12,7 +12,7 @@ class Session(db.Model):
     __tablename__ = 'sessions'
     
     session_id = db.Column(db.String(100), primary_key=True, default=lambda: str(uuid.uuid4()))
-    patient_id = db.Column(db.String(36), db.ForeignKey('patients.patient_id'), nullable=False, index=True)
+    patient_id = db.Column(db.String(36), db.ForeignKey('patient.patient_id'), nullable=False, index=True)
     device_id = db.Column(db.String(100), index=True)
     authenticated = db.Column(db.Boolean, default=False)
     started_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
@@ -45,7 +45,7 @@ class Alert(db.Model):
     __tablename__ = 'alerts'
     
     alert_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    patient_id = db.Column(db.String(36), db.ForeignKey('patients.patient_id'), nullable=False, index=True)
+    patient_id = db.Column(db.String(36), db.ForeignKey('patient.patient_id'), nullable=False, index=True)
     alert_type = db.Column(db.String(50), nullable=False, index=True)  # 'health', 'medication', 'behavioral', 'system'
     severity = db.Column(db.String(20), nullable=False, index=True)  # 'low', 'medium', 'high', 'critical'
     message = db.Column(db.String(500), nullable=False)

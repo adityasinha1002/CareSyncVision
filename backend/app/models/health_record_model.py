@@ -12,7 +12,7 @@ class HealthRecord(db.Model):
     __tablename__ = 'health_records'
     
     record_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    patient_id = db.Column(db.String(36), db.ForeignKey('patients.patient_id'), nullable=False, index=True)
+    patient_id = db.Column(db.String(36), db.ForeignKey('patient.patient_id'), nullable=False, index=True)
     record_type = db.Column(db.String(50), nullable=False)  # 'image', 'vital', 'behavioral'
     image_filename = db.Column(db.String(255))
     device_id = db.Column(db.String(100), index=True)
