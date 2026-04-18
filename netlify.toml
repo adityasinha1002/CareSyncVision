@@ -6,7 +6,7 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_VERSION = "10"
-  VITE_API_URL = "https://caresynvision-api-production.up.railway.app/api"
+  VITE_API_URL = "https://caresyncvision-api-production.up.railway.app/api"
 
 # Redirect all non-file requests to index.html for SPA routing
 [[redirects]]
