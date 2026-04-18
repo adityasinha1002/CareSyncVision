@@ -159,6 +159,15 @@ def submit_vitals(current_patient_id):
         
         session = get_db_session()
         session.add(health_record)
+        session.flush()
+
+        record_response = {
+            'record_id': health_record.record_id,
+            'patient_id': health_record.patient_id,
+            'record_type': health_record.record_type,
+            'data': health_record.data,
+            'timestamp': health_record.timestamp.isoformat(),
+        }
         session.commit()
         
         logger.info(f"Vital signs recorded for patient {current_patient_id}")
@@ -166,7 +175,7 @@ def submit_vitals(current_patient_id):
         return jsonify({
             'success': True,
             'message': 'Vital signs recorded successfully',
-            'record': health_record.to_dict()
+            'record': record_response
         }), 201
     
     except Exception as e:
