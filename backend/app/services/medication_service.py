@@ -229,7 +229,7 @@ class MedicationService:
                 select(Medication).where(
                     Medication.patient_id == patient_id,
                     Medication.scheduled_time.isnot(None),
-                    Medication.administered == False,
+                    Medication.administered.is_(False),
                     Medication.created_at <= cutoff_time
                 )
             ).scalars().all()
@@ -241,7 +241,7 @@ class MedicationService:
                         Alert.patient_id == patient_id,
                         Alert.alert_type == 'medication',
                         Alert.message.contains(med.medication_name),
-                        Alert.resolved_at == None
+                        Alert.resolved_at.is_(None)
                     )
                 ).scalars().first()
                 
