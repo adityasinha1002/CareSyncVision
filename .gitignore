@@ -4,6 +4,9 @@
 .env.local
 .env.*.local
 .env.production.local
+backend/.env
+frontend/.env
+frontend/.env.local
 
 # SSL Certificates & Keys
 *.pem

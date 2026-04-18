@@ -30,9 +30,9 @@ services:
     image: postgres:15-alpine
     container_name: caresynvision-db
     environment:
-      POSTGRES_USER: caresynvision
-      POSTGRES_PASSWORD: caresynvision_secure_password
-      POSTGRES_DB: caresynvision
+      POSTGRES_USER: ${POSTGRES_USER:-caresynvision}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-in-production}
+      POSTGRES_DB: ${POSTGRES_DB:-caresynvision}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/database/init_db.sql:/docker-entrypoint-initdb.d/init.sql
@@ -55,9 +55,9 @@ services:
     container_name: caresynvision-backend
     environment:
       FLASK_APP: wsgi.py
-      FLASK_ENV: production
+      FLASK_ENV: ${FLASK_ENV:-production}
       PYTHONUNBUFFERED: 1
-      DATABASE_URL: postgresql://caresynvision:caresynvision_secure_password@postgres:5432/caresynvision
+      DATABASE_URL: postgresql://${POSTGRES_USER:-caresynvision}:${POSTGRES_PASSWORD:-change-in-production}@postgres:5432/${POSTGRES_DB:-caresynvision}
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-change-this-in-production}
     volumes:
       - ./backend/app:/app/app
