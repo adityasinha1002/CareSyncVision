@@ -54,8 +54,10 @@ def create_app(config=None):
     # Create upload folder if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
-    # Enable CORS
-    CORS(app)
+    # Enable CORS with environment-based origins
+    cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
+    cors_origins = [origin.strip() for origin in cors_origins]  # Clean whitespace
+    CORS(app, origins=cors_origins, supports_credentials=True)
     
     # Initialize database
     db.init_app(app)

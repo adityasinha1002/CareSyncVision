@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: caresynvision-api
+    runtime: python:3.11
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:10000 --workers 2 --timeout 120 wsgi:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: FLASK_SECRET_KEY
+        scope: secret
+      - key: DATABASE_URL
+        scope: secret
+      - key: CORS_ORIGINS
+        value: http://localhost:3000
+      - key: RISK_LOW_THRESHOLD
+        value: "30"
+      - key: RISK_HIGH_THRESHOLD
+        value: "60"
+      - key: SESSION_TIMEOUT
+        value: "3600"
+      - key: PHASE_1_VERIFICATION_ONLY
+        value: "True"
+      - key: PHASE_2_MEDICATION_ENGINE_ENABLED
+        value: "False"
+      - key: PHASE_3_RESPONSE_ENGINE_ENABLED
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+    rootDir: backend

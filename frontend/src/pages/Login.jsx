@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../hooks/useStore';
+import { Heart } from 'lucide-react';
 
 export const Login = () => {
   const [patientId, setPatientId] = useState('');
@@ -8,7 +9,6 @@ export const Login = () => {
   const navigate = useNavigate();
   const { login, loading, error, isAuthenticated } = useAuthStore();
 
-  // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
@@ -28,58 +28,75 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full bg-white rounded-lg shadow p-8">
-        <h1 className="text-3xl font-bold text-center mb-8">CareSyncVision</h1>
-        
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-              {error}
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center p-4">
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo & Header */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-3 rounded-full">
+              <Heart className="w-8 h-8 text-white" />
             </div>
-          )}
-
-          <div className="mb-4">
-            <label className="block text-gray-700 font-semibold mb-2">
-              Patient ID
-            </label>
-            <input
-              type="text"
-              value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your patient ID"
-              disabled={loading}
-            />
           </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">
+            CareSyncVision
+          </h1>
+          <p className="text-gray-600 mt-2 font-light">Intelligent Health Monitoring</p>
+        </div>
 
-          <div className="mb-6">
-            <label className="block text-gray-700 font-semibold mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-              disabled={loading}
-            />
+        {/* Card */}
+        <div className="card backdrop-blur-md bg-white/95 border-gray-200">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                <p className="text-red-700 font-medium">{error}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="label">Patient ID</label>
+              <input
+                type="text"
+                value={patientId}
+                onChange={(e) => setPatientId(e.target.value)}
+                className="input-field"
+                placeholder="Enter your patient ID"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="label">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
+                placeholder="••••••••"
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !patientId || !password}
+              className="btn-primary w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+
+        {/* Demo Info */}
+        <div className="mt-6 card bg-gradient-to-r from-primary-50 to-primary-100 border-primary-200">
+          <p className="text-sm font-semibold text-primary-900 mb-3">Demo Credentials:</p>
+          <div className="space-y-2 text-sm text-primary-800 font-mono">
+            <p><span className="font-semibold">Patient ID:</span> 4d8a9d39-ed16-4a74-a49d-b425cd3d7dda</p>
+            <p><span className="font-semibold">Password:</span> password</p>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading || !patientId || !password}
-            className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded">
-          <p className="text-sm text-blue-800 font-semibold mb-2">Demo Credentials:</p>
-          <p className="text-sm text-blue-700">Patient ID: 4d8a9d39-ed16-4a74-a49d-b425cd3d7dda</p>
-          <p className="text-sm text-blue-700">Password: password</p>
         </div>
       </div>
     </div>
