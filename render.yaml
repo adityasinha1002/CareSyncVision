@@ -1,7 +1,7 @@
 services:
   - type: web
     name: caresynvision-api
-    runtime: python:3.11
+    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:10000 --workers 2 --timeout 120 wsgi:app
     envVars:
@@ -10,9 +10,9 @@ services:
       - key: FLASK_DEBUG
         value: "false"
       - key: FLASK_SECRET_KEY
-        scope: secret
+        value: ${FLASK_SECRET_KEY}
       - key: DATABASE_URL
-        scope: secret
+        value: ${DATABASE_URL}
       - key: CORS_ORIGINS
         value: http://localhost:3000
       - key: RISK_LOW_THRESHOLD
