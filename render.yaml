@@ -3,8 +3,8 @@ services:
     name: caresynvision-api
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:10000 --workers 2 --timeout 120 --preload-app wsgi:app
+    buildCommand: pip install -r requirements.txt && flask db upgrade
+    startCommand: gunicorn --preload-app -w 2 -b 0.0.0.0:10000 wsgi:app
     envVars:
       - key: FLASK_ENV
         value: production
