@@ -48,10 +48,13 @@ def create_app(config=None):
     if db_url and db_url.startswith('postgresql://'):
         db_url = db_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     
+    # Set database URI - if not available, use a placeholder (will fail at runtime, not startup)
+    if db_url:
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+    
     app.config.update(
         SECRET_KEY=os.getenv('FLASK_SECRET_KEY', app.config.get('SECRET_KEY')),
         MAX_CONTENT_LENGTH=int(os.getenv('MAX_IMAGE_SIZE', 5242880)),
-        SQLALCHEMY_DATABASE_URI=db_url,
     )
     
     # Override config with passed dict if provided
@@ -77,9 +80,14 @@ def create_app(config=None):
     logger.info(f"CORS origins configured: {cors_origins}")
     CORS(app, origins=cors_origins, supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
     
-    # Initialize database
-    db.init_app(app)
-    migrate.init_app(app, db)
+    # Initialize database - non-blocking, won't crash if DB unavailable
+    try:
+        db.init_app(app)
+        migrate.init_app(app, db)
+        logger.info("Database initialized")
+    except Exception as e:
+        logger.warning(f"Database initialization deferred: {e}")
+        # App will still start, database requests will fail gracefully
     
     # Add root route for health check (accessible at /)
     @app.route('/', methods=['GET'])
