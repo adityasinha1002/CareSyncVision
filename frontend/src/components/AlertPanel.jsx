@@ -1,41 +1,19 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { patientService } from '../services/api';
-  return (
-    <div className="dashboard-card border-primary">
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary">
-        <AlertCircle className="w-5 h-5 text-primary" /> Alerts
-      </h2>
-      {alerts.length === 0 ? (
-        <div className="text-gray-400">No alerts</div>
-      ) : (
-        <ul className="space-y-4">
-          {alerts.map((alert) => (
-            <li
-              key={alert.alert_id}
-              className={`border-l-4 pl-4 py-2 ${getSeverityColor(alert.severity)}`}
-            >
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-primary">{alert.alert_type}</span>
-                <span className="text-xs text-gray-400 ml-auto">{formatTimeAgo(alert.created_at)}</span>
-              </div>
-              <div className="text-gray-700">{alert.message}</div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-          generatedAlerts.push({
-            alert_id: 'risk-medium',
-            severity: 'high',
-            alert_type: 'health',
-            message: 'Medium-high risk score. Monitor vital signs closely.',
-            created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-        }
 
+export const AlertPanel = ({ patientId }) => {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
+
+  useEffect(() => {
+    const loadAlerts = async () => {
+      setLoading(true);
+      try {
+        // Example: fetch alerts from API or generate demo alerts
+        let generatedAlerts = [];
+        // ...fetch or generate alerts logic here...
         setAlerts(generatedAlerts);
       } catch (err) {
         console.error('Failed to load alerts:', err);
@@ -43,7 +21,6 @@ import { patientService } from '../services/api';
         setLoading(false);
       }
     };
-
     if (patientId) {
       loadAlerts();
     }

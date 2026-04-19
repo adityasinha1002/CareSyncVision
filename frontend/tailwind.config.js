@@ -25,7 +25,12 @@ export default {
           500: '#ec4899',
           600: '#db2777',
         },
-      },
+        },
+        colors: {
+          primary: '#9f1211',
+          accent: '#ffffff',
+          nvidiaRed: '#9f1211',
+        },
       fontFamily: {
         sans: ['Segoe UI', 'Roboto', 'sans-serif'],
       },

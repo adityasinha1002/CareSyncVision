@@ -72,71 +72,18 @@ export const Dashboard = () => {
     );
   }
 
+
+
+
+
+
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">CareSyncVision Dashboard</h1>
-            <p className="text-gray-600 mt-1">
-              {patientData?.name || 'Patient'} • Patient Health Monitoring & Medication Tracking
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/health-input')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              <Plus className="w-4 h-4" />
-              Record Vitals
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Error Banner */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mx-4 mt-4">
-          {error}
-        </div>
-      )}
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Health Summary Cards */}
-        <HealthSummary data={patientData} adherenceMetrics={adherenceMetrics} />
-
-        {/* Charts and Alerts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Risk Score Chart */}
-          <div className="lg:col-span-2">
-            <RiskScoreChart data={healthHistory} />
-          </div>
-
-          {/* Alert Panel */}
-          <div>
-            <AlertPanel patientId={user?.patient_id} />
-          </div>
-        </div>
-
-        {/* Medication Tracker */}
-        <div className="mt-6">
-          <MedicationTracker medications={medications} patientId={user?.patient_id} />
-        </div>
-
-        {/* ESP32 Device Demo - Coming Soon Feature */}
-        <div className="mt-6">
-          <ESPDeviceDemo />
-        </div>
-      </main>
+    <div className="dashboard-container">
+      <h1 className="dashboard-header">CareSyncVision Dashboard</h1>
+      <div className="dashboard-card">
+        {/* ...existing dashboard content... */}
+      </div>
     </div>
   );
 };

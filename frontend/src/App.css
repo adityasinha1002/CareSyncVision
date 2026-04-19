@@ -6,3 +6,22 @@
     animation: none;
   }
 }
+body {
+  @apply bg-white text-gray-900 font-sans;
+}
+
+.dashboard-container {
+  @apply bg-white min-h-screen flex flex-col items-center px-4 py-8;
+}
+
+.dashboard-card {
+  @apply bg-white border border-gray-200 rounded-xl shadow-lg p-6 mb-6 w-full max-w-3xl;
+}
+
+.dashboard-header {
+  @apply text-3xl font-bold mb-8 text-center text-primary;
+}
+
+.dashboard-btn {
+  @apply bg-primary text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-red-800 transition;
+}
