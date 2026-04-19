@@ -165,7 +165,9 @@ def create_app(config=None):
                 logger.warning(f"Could not ensure database tables: {str(create_err)}")
 
             # Seed a demo account for quick login and deployment verification.
-            # This is idempotent and only creates the record if it does not already exist.
+            # This is idempotent: creates the record if absent, and repairs a
+            # missing password_hash if the record already exists (e.g. created
+            # before the email/password auth system was introduced).
             try:
                 demo_patient = Patient.query.filter_by(email='demo@example.com').first()
                 if not demo_patient:
@@ -179,8 +181,13 @@ def create_app(config=None):
                     db.session.add(demo_patient)
                     db.session.commit()
                     logger.info("Demo account seeded successfully (demo@example.com)")
+                elif not demo_patient.password_hash:
+                    # Repair: account exists but password was never hashed
+                    demo_patient.set_password('DemoPass123')
+                    db.session.commit()
+                    logger.info("Demo account password_hash repaired (demo@example.com)")
                 else:
-                    logger.info("Demo account already present")
+                    logger.info("Demo account already present with password")
             except Exception as demo_err:
                 db.session.rollback()
                 logger.warning(f"Could not seed demo account: {str(demo_err)}")

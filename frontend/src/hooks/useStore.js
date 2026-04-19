@@ -29,7 +29,6 @@ export const useAuthStore = create((set) => ({
       const response = await authService.login(email, password);
       const { token, patient_id, name } = response.data;
       
-      // Store token and user info
       authService.setToken(token);
       localStorage.setItem('patientId', patient_id);
       localStorage.setItem('email', email);
@@ -45,6 +44,32 @@ export const useAuthStore = create((set) => ({
       return { success: true };
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Login failed';
+      set({ error: errorMsg, loading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  googleLogin: async (credential) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await authService.googleAuth(credential);
+      const { token, patient_id, name, email } = response.data;
+
+      authService.setToken(token);
+      localStorage.setItem('patientId', patient_id);
+      localStorage.setItem('email', email || '');
+      localStorage.setItem('name', name || '');
+
+      set({
+        token,
+        user: { patient_id, email, name },
+        isAuthenticated: true,
+        loading: false,
+      });
+
+      return { success: true };
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Google login failed';
       set({ error: errorMsg, loading: false });
       return { success: false, error: errorMsg };
     }

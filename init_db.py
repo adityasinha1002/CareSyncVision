@@ -26,6 +26,11 @@ def init_demo_user():
             
             if demo_user:
                 print("✅ Demo user already exists")
+                # Repair password_hash if it was never set
+                if not demo_user.password_hash:
+                    demo_user.set_password('DemoPass123')
+                    db.session.commit()
+                    print("   ✅ Password hash was missing — repaired.")
                 return True
             
             # Create demo user

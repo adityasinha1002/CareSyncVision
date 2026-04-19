@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../hooks/useStore';
+import { GoogleLogin } from '@react-oauth/google';
 import { Heart, Eye, EyeOff, ArrowRight, Activity, Shield, Zap } from 'lucide-react';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { login, loading, error, isAuthenticated } = useAuthStore();
+  const { login, googleLogin, loading, error, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -21,6 +24,20 @@ export const Login = () => {
     if (!email || !password) return;
     const result = await login(email, password);
     if (result.success) navigate('/dashboard');
+  };
+
+  const handleDemoLogin = async () => {
+    const result = await login('demo@example.com', 'DemoPass123');
+    if (result.success) navigate('/dashboard');
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const result = await googleLogin(credentialResponse.credential);
+    if (result.success) navigate('/dashboard');
+  };
+
+  const handleGoogleError = () => {
+    useAuthStore.getState().setError('Google sign-in failed. Please try again.');
   };
 
   return (
@@ -100,6 +117,27 @@ export const Login = () => {
             </div>
           )}
 
+          {/* Google Sign-In */}
+          {GOOGLE_CLIENT_ID && (
+            <div className="mb-5">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap={false}
+                theme="outline"
+                size="large"
+                width="100%"
+                text="signin_with"
+                shape="rectangular"
+              />
+              <div className="flex items-center gap-3 my-5">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400 font-medium">or continue with email</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="label">Email address</label>
@@ -169,17 +207,28 @@ export const Login = () => {
             </button>
           </p>
 
-          {/* Demo credentials */}
+          {/* Demo credentials + quick login */}
           <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Demo Account</p>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-sm mb-3">
               <p className="text-gray-700"><span className="font-medium text-gray-900">Email:</span> demo@example.com</p>
               <p className="text-gray-700"><span className="font-medium text-gray-900">Password:</span> DemoPass123</p>
             </div>
+            <button
+              onClick={handleDemoLogin}
+              disabled={loading}
+              className="w-full py-2 text-sm font-semibold rounded-lg border-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ borderColor: '#9f1211', color: '#9f1211', backgroundColor: 'transparent' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#9f1211'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#9f1211'; }}
+            >
+              {loading ? 'Signing in...' : '⚡ Quick Demo Login'}
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 

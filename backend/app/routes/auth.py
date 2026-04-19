@@ -7,6 +7,10 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 import re
+import os
+import json as json_lib
+import urllib.request
+import urllib.error
 from sqlalchemy import select
 from app.services.auth_service import AuthService
 from app.models.patient_model import Patient
@@ -307,6 +311,103 @@ def refresh_token():
     except Exception as e:
         logger.error(f"Error refreshing token: {str(e)}", exc_info=True)
         return jsonify({"error": "Server error"}), 500
+
+
+@auth_bp.route('/auth/google', methods=['POST'])
+def google_auth():
+    """
+    Authenticate with a Google ID token (from Google Identity Services).
+
+    JSON payload:
+    {
+        "credential": "<Google ID token string>"
+    }
+
+    The endpoint verifies the token against Google's tokeninfo API,
+    then finds or creates the matching Patient and returns a JWT.
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+
+        credential = data.get('credential', '').strip()
+        if not credential:
+            return jsonify({"error": "Google credential token is required"}), 400
+
+        # ---------------------------------------------------------------
+        # Verify the ID token with Google's public tokeninfo endpoint.
+        # This works without server-side libraries and without a secret.
+        # ---------------------------------------------------------------
+        try:
+            url = f'https://oauth2.googleapis.com/tokeninfo?id_token={credential}'
+            req = urllib.request.Request(url, headers={'Accept': 'application/json'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                idinfo = json_lib.loads(response.read().decode())
+        except urllib.error.HTTPError as http_err:
+            body = http_err.read().decode() if hasattr(http_err, 'read') else ''
+            logger.warning(f"Google token verification HTTP error {http_err.code}: {body}")
+            return jsonify({"error": "Invalid Google token"}), 401
+        except Exception as e:
+            logger.error(f"Google token verification error: {str(e)}", exc_info=True)
+            return jsonify({"error": "Failed to verify Google token"}), 401
+
+        # Optionally enforce that the token was issued for this application.
+        google_client_id = os.getenv('GOOGLE_CLIENT_ID')
+        if google_client_id and idinfo.get('aud') != google_client_id:
+            logger.warning(
+                f"Google token audience mismatch: got '{idinfo.get('aud')}', "
+                f"expected '{google_client_id}'"
+            )
+            return jsonify({"error": "Token not issued for this application"}), 401
+
+        # Require a verified email from Google.
+        if not idinfo.get('email_verified') or str(idinfo.get('email_verified')).lower() != 'true':
+            return jsonify({"error": "Google account email is not verified"}), 401
+
+        email = idinfo.get('email', '').strip()
+        name = idinfo.get('name') or email
+        if not email:
+            return jsonify({"error": "Email not provided by Google"}), 400
+
+        # ---------------------------------------------------------------
+        # Find or create the patient record.
+        # ---------------------------------------------------------------
+        result = get_db_session().execute(select(Patient).where(Patient.email == email))
+        patient = result.scalar_one_or_none()
+
+        if not patient:
+            patient = Patient(email=email, name=name, active=True)
+            try:
+                session = get_db_session()
+                session.add(patient)
+                session.commit()
+                logger.info(f"New patient created via Google OAuth: {email} (ID: {patient.patient_id})")
+            except Exception as e:
+                get_db_session().rollback()
+                logger.error(f"Error creating patient from Google auth: {str(e)}", exc_info=True)
+                return jsonify({"error": "Failed to create account"}), 500
+        else:
+            logger.info(f"Existing patient logged in via Google OAuth: {email}")
+
+        # Generate JWT token.
+        token = AuthService.generate_token(patient.patient_id)
+        if not token:
+            return jsonify({"error": "Failed to generate token"}), 500
+
+        return jsonify({
+            'success': True,
+            'message': 'Login successful',
+            'token': token,
+            'patient_id': patient.patient_id,
+            'email': patient.email,
+            'name': patient.name,
+            'expires_in': 86400,
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error during Google auth: {str(e)}", exc_info=True)
+        return jsonify({"error": "Server error", "message": str(e)}), 500
 
 
 @auth_bp.route('/auth/logout', methods=['POST'])
