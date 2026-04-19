@@ -82,12 +82,10 @@ def create_app(config=None):
         logger.warning(f"Could not create upload folder: {e}")
     
     # Enable CORS with environment-based origins.
-    # Keep localhost for development and always allow the Netlify production frontend.
-    cors_origins = [
-        'http://localhost:3000',
-        'http://localhost:5000',
-        'https://caresyncvision.vercel.app',  # Vercel production frontend
-    ]
+    # HTTP localhost is only included in non-production environments.
+    cors_origins = ['https://caresyncvision.vercel.app']  # Vercel production frontend
+    if env != 'production':
+        cors_origins += ['http://localhost:3000', 'http://localhost:5000']
     env_cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
     cors_origins.extend(env_cors_origins)
     cors_origins = list(dict.fromkeys(cors_origins))

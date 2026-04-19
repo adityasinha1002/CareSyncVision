@@ -157,16 +157,21 @@ def receive_health_data():
             logger.warning(f"Oversized health data from patient {patient_id}")
             return jsonify({"error": "File too large"}), 413
         
-        # Save image — sanitise patient_id so it cannot contain path components
+        # Save image — sanitise patient_id so it cannot contain path components,
+        # then verify the resolved path stays inside the upload folder.
         health_id = str(uuid.uuid4())[:8]
         safe_patient_id = re.sub(r'[^a-zA-Z0-9_-]', '_', patient_id)
         image_filename = f"health_{safe_patient_id}_{health_id}_{int(datetime.utcnow().timestamp()*1000)}.jpg"
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_filename)
-        
+        upload_folder = os.path.realpath(current_app.config['UPLOAD_FOLDER'])
+        image_path = os.path.realpath(os.path.join(upload_folder, image_filename))
+        if not image_path.startswith(upload_folder + os.sep):
+            logger.warning("Rejected health-data upload: resolved path outside upload folder")
+            return jsonify({"error": "Invalid file path"}), 400
+
         with open(image_path, 'wb') as f:
             f.write(request.data)
-        
-        logger.info(f"Health data saved: {image_filename} ({len(request.data)} bytes) from {device_id}")
+
+        logger.info(f"Health data saved: {len(request.data)} bytes from device {device_id}")
         
         # Process through analysis pipeline
         result = patient_service.process_patient_data({
@@ -212,7 +217,7 @@ def receive_vitals(patient_id):
         
         data['patient_id'] = patient_id
         
-        logger.info(f"Received vitals for patient {patient_id}")
+        logger.info("Received vitals data")
         
         # Process vitals
         result = patient_service.process_vitals(data)

@@ -34,11 +34,10 @@ logger = logging.getLogger(__name__)
 
 # Flask app initialization
 app = Flask(__name__)
-CORS(app, origins=[
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'https://caresyncvision.vercel.app',
-])
+_cors_origins = ['https://caresyncvision.vercel.app']
+if os.getenv('FLASK_ENV') != 'production':
+    _cors_origins += ['http://localhost:3000', 'http://localhost:5000']
+CORS(app, origins=_cors_origins)
 
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -121,7 +120,7 @@ def receive_patient_health_data():
         with open(image_path, 'wb') as f:
             f.write(request.data)
         
-        logger.info(f"Health data saved: {image_filename} ({len(request.data)} bytes)")
+        logger.info(f"Health data saved: {len(request.data)} bytes")
         
         # Process through patient monitoring pipeline
         result = process_patient_pipeline(image_path, {
@@ -283,7 +282,7 @@ def process_patient_pipeline(image_path, metadata):
             'estimated_vitals': health_analysis.get('estimated_vitals')
         }
 
-        logger.info(f"Health Analysis: Activity={health_analysis.get('activity_level')}, Sleep Quality={health_analysis.get('sleep_quality')}")
+        logger.info(f"Health Analysis completed: success={health_analysis['success']}")
 
         if not health_analysis['success']:
             logger.warning("Unable to analyze health data - returning early")
@@ -331,7 +330,7 @@ def process_patient_pipeline(image_path, metadata):
             'reasoning': medication_analysis.get('reasoning')
         }
 
-        logger.info(f"Medication Adjustment: {medication_analysis.get('recommendation')} (Confidence: {medication_analysis.get('confidence')}%)")
+        logger.info(f"Medication Adjustment completed: success={medication_analysis.get('success')}")
 
         # ====================================================================
         # STAGE 3: HEALTH RESPONSE ENGINE

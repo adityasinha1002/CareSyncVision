@@ -61,7 +61,7 @@ class HealthAnalysisEngine:
         try:
             # Check if image file exists
             if not os.path.exists(image_path):
-                logger.warning(f"Image not found: {image_path}")
+                logger.warning("Image not found at expected path")
                 return {
                     'success': False,
                     'error': 'Image not found',

@@ -187,11 +187,11 @@ def login():
             # Legacy: if patient has a password hash, verify it; otherwise use hardcoded check
             if patient.password_hash:
                 if not patient.check_password(legacy_password):
-                    logger.warning(f"Login failed: Invalid password for patient {patient_id}")
+                    logger.warning("Login failed: Invalid legacy credentials")
                     return jsonify({"error": "Invalid credentials"}), 401
             else:
                 # No password set for this legacy account
-                logger.warning("Login failed: No password set for legacy patient account")
+                logger.warning("Login failed: Invalid legacy credentials")
                 return jsonify({"error": "Invalid credentials"}), 401
         
         # Generate JWT token
