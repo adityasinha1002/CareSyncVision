@@ -282,7 +282,7 @@ def process_patient_pipeline(image_path, metadata):
             'estimated_vitals': health_analysis.get('estimated_vitals')
         }
 
-        logger.info(f"Health Analysis completed: success={health_analysis['success']}")
+        logger.info("STAGE 1 complete: health data analysis done")
 
         if not health_analysis['success']:
             logger.warning("Unable to analyze health data - returning early")
@@ -330,7 +330,7 @@ def process_patient_pipeline(image_path, metadata):
             'reasoning': medication_analysis.get('reasoning')
         }
 
-        logger.info(f"Medication Adjustment completed: success={medication_analysis.get('success')}")
+        logger.info("STAGE 2 complete: medication adjustment analysis done")
 
         # ====================================================================
         # STAGE 3: HEALTH RESPONSE ENGINE
@@ -359,7 +359,7 @@ def process_patient_pipeline(image_path, metadata):
             'caregiver_alert': health_response.get('caregiver_alert')
         }
 
-        logger.info(f"Health Response: {health_response.get('response_type')}")
+        logger.info("STAGE 3 complete: health response generated")
 
         # Set final recommendation and action
         pipeline_result['final_recommendation'] = medication_analysis.get('recommendation', 'NO_ACTION')
