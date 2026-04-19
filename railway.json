@@ -4,7 +4,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "numReplicas": 1,
-    "startCommand": "flask db upgrade && python init_db.py && gunicorn --config gunicorn_config.py main:app"
+    "numReplicas": 1
   }
 }
+
