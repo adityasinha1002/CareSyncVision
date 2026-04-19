@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { useAuthStore } from './hooks/useStore';
 
 const Login      = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
@@ -55,6 +56,7 @@ function App() {
           <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
         </Routes>
       </Suspense>
+      <Analytics />
     </Router>
   );
 }
