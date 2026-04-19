@@ -338,15 +338,16 @@ def google_auth():
         # ---------------------------------------------------------------
         # Verify the ID token with Google's public tokeninfo endpoint.
         # This works without server-side libraries and without a secret.
+        # The token is URL-encoded to prevent URL injection.
         # ---------------------------------------------------------------
         try:
-            url = f'https://oauth2.googleapis.com/tokeninfo?id_token={credential}'
+            import urllib.parse as _parse
+            url = 'https://oauth2.googleapis.com/tokeninfo?' + _parse.urlencode({'id_token': credential})
             req = urllib.request.Request(url, headers={'Accept': 'application/json'})
             with urllib.request.urlopen(req, timeout=10) as response:
                 idinfo = json_lib.loads(response.read().decode())
         except urllib.error.HTTPError as http_err:
-            body = http_err.read().decode() if hasattr(http_err, 'read') else ''
-            logger.warning(f"Google token verification HTTP error {http_err.code}: {body}")
+            logger.warning(f"Google token verification HTTP error {http_err.code}")
             return jsonify({"error": "Invalid Google token"}), 401
         except Exception as e:
             logger.error(f"Google token verification error: {str(e)}", exc_info=True)
@@ -355,14 +356,13 @@ def google_auth():
         # Optionally enforce that the token was issued for this application.
         google_client_id = os.getenv('GOOGLE_CLIENT_ID')
         if google_client_id and idinfo.get('aud') != google_client_id:
-            logger.warning(
-                f"Google token audience mismatch: got '{idinfo.get('aud')}', "
-                f"expected '{google_client_id}'"
-            )
+            logger.warning("Google token audience mismatch — token not intended for this app")
             return jsonify({"error": "Token not issued for this application"}), 401
 
         # Require a verified email from Google.
-        if not idinfo.get('email_verified') or str(idinfo.get('email_verified')).lower() != 'true':
+        # The tokeninfo endpoint may return email_verified as a boolean or a string.
+        email_verified = idinfo.get('email_verified', False)
+        if not (email_verified is True or str(email_verified).lower() == 'true'):
             return jsonify({"error": "Google account email is not verified"}), 401
 
         email = idinfo.get('email', '').strip()
@@ -407,7 +407,7 @@ def google_auth():
 
     except Exception as e:
         logger.error(f"Error during Google auth: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @auth_bp.route('/auth/logout', methods=['POST'])

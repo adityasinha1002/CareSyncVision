@@ -10,6 +10,7 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [demoBtnHovered, setDemoBtnHovered] = useState(false);
   const navigate = useNavigate();
   const { login, googleLogin, loading, error, isAuthenticated } = useAuthStore();
 
@@ -217,10 +218,14 @@ export const Login = () => {
             <button
               onClick={handleDemoLogin}
               disabled={loading}
+              onMouseEnter={() => setDemoBtnHovered(true)}
+              onMouseLeave={() => setDemoBtnHovered(false)}
               className="w-full py-2 text-sm font-semibold rounded-lg border-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ borderColor: '#9f1211', color: '#9f1211', backgroundColor: 'transparent' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#9f1211'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#9f1211'; }}
+              style={{
+                borderColor: '#9f1211',
+                color: demoBtnHovered ? '#fff' : '#9f1211',
+                backgroundColor: demoBtnHovered ? '#9f1211' : 'transparent',
+              }}
             >
               {loading ? 'Signing in...' : '⚡ Quick Demo Login'}
             </button>
