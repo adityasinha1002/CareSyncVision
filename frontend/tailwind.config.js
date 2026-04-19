@@ -1,5 +1,4 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
-import colors from 'tailwindcss/colors';
 
 export default {
   content: [
@@ -23,9 +22,6 @@ export default {
       backdropBlur: {
         xs: '2px',
       },
-    },
-    colors: {
-      ...colors,
     },
   },
   plugins: [],
