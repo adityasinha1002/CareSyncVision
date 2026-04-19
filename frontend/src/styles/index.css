@@ -1,49 +1,85 @@
-@tailwind base;
+@import "tailwindcss";
+
 /* Trigger Vercel rebuild: another trivial comment */
-@tailwind components;
-@tailwind utilities;
 
 @layer base {
   body {
-    @apply text-gray-900;
+    color: #111827;
+    background-color: #f9fafb;
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
   }
 
   h1 {
-    @apply text-4xl font-bold;
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 700;
   }
 
   h2 {
-    @apply text-2xl font-semibold;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
   }
 
   h3 {
-    @apply text-xl font-semibold;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-soft;
+    padding: 0.5rem 1rem;
+    background-color: #2563eb;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    transition: background-color 150ms ease;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+    padding: 0.5rem 1rem;
+    background-color: #e5e7eb;
+    color: #111827;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: background-color 150ms ease;
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium;
+    padding: 0.5rem 1rem;
+    background-color: #dc2626;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: background-color 150ms ease;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-soft p-6 border border-gray-100;
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border: 1px solid #f3f4f6;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
   }
 
   .label {
-    @apply block text-sm font-semibold text-gray-700 mb-2;
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
   }
 }
 

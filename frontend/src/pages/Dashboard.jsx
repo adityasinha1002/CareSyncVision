@@ -3,7 +3,7 @@ import { useAuthStore } from '../hooks/useStore';
 import { patientService, medicationService } from '../services/api';
 import { HealthSummary } from '../components/HealthSummary';
 import { RiskScoreChart } from '../components/RiskScoreChart';
-import { MedicationTracker } from '../components/MedicationTracker';
+import MedicationTracker from '../components/MedicationTracker';
 import { AlertPanel } from '../components/AlertPanel';
 import { ESPDeviceDemo } from '../components/ESPDeviceDemo';
 import { LogOut, Plus } from 'lucide-react';
