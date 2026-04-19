@@ -1,13 +1,10 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
+const defaultTheme = require('tailwindcss/defaultTheme');
 
-export default {
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,jsx,ts,tsx,css}",
     "./src/styles/**/*.{css,scss}",
-  ],
-  safelist: [
-    'bg-gray-50',
   ],
   theme: {
     extend: {
@@ -25,4 +22,4 @@ export default {
     },
   },
   plugins: [],
-}
+};
