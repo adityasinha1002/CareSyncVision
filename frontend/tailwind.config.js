@@ -2,7 +2,11 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx}",
+    "./src/**/*.{js,jsx,ts,tsx,css}",
+    "./src/styles/**/*.{css,scss}",
+  ],
+  safelist: [
+    'bg-gray-50',
   ],
   theme: {
     extend: {
