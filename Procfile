@@ -1,2 +1,2 @@
 release: flask db upgrade && python init_db.py
-web: gunicorn main:app
+web: gunicorn --config gunicorn_config.py main:app

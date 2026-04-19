@@ -65,10 +65,11 @@ def upgrade():
         sa.Column('dosage', sa.String(100), nullable=True),
         sa.Column('frequency', sa.String(100), nullable=True),
         sa.Column('scheduled_time', sa.Time(), nullable=True),
-        sa.Column('start_date', sa.Date(), nullable=True),
-        sa.Column('end_date', sa.Date(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.true()),
-        sa.Column('notes', sa.Text(), nullable=True),
+        sa.Column('administered', sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column('administered_time', sa.DateTime(), nullable=True),
+        sa.Column('last_taken', sa.DateTime(), nullable=True),
+        sa.Column('adherence_status', sa.String(50), nullable=True, server_default=sa.text("'pending'")),
+        sa.Column('notes', sa.String(500), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['patient_id'], ['patient.patient_id']),
@@ -76,6 +77,7 @@ def upgrade():
     )
     op.create_index('ix_medications_patient_id', 'medications', ['patient_id'])
     op.create_index('ix_medications_medication_name', 'medications', ['medication_name'])
+    op.create_index('ix_medications_administered', 'medications', ['administered'])
 
     # Create sessions table
     op.create_table('sessions',
@@ -116,6 +118,7 @@ def upgrade():
 
 def downgrade():
     # Drop all tables in reverse order (due to foreign keys)
+    op.drop_index('ix_medications_administered', table_name='medications')
     op.drop_table('alerts')
     op.drop_table('sessions')
     op.drop_table('medications')
