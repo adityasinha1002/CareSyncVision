@@ -21,8 +21,9 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 # Configure logging
+log_level_name = os.getenv('LOG_LEVEL', 'INFO').upper()
 logging.basicConfig(
-    level=logging.getLevelName(os.getenv('LOG_LEVEL', 'INFO')),
+    level=logging._nameToLevel.get(log_level_name, logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -150,9 +151,9 @@ def create_app(config=None):
             # Import models to register them with SQLAlchemy
             # This allows alembic to detect schema changes
             from app.models.patient_model import Patient
-            from app.models.health_record_model import HealthRecord
-            from app.models.medication_model import Medication
-            from app.models.session_alert_model import Session, Alert
+            from app.models.health_record_model import HealthRecord  # noqa: F401
+            from app.models.medication_model import Medication  # noqa: F401
+            from app.models.session_alert_model import Session, Alert  # noqa: F401
             
             logger.info("Database models loaded successfully")
 
@@ -190,7 +191,7 @@ def create_app(config=None):
             # We only verify tables exist if migration was already run
             try:
                 # Just verify connection is possible by getting a test connection
-                with db.engine.connect() as conn:
+                with db.engine.connect() as _conn:
                     logger.info("Database connection verified")
             except Exception as conn_err:
                 logger.warning(f"Database not yet initialized (expected during first deploy): {str(conn_err)}")
@@ -206,7 +207,7 @@ def create_app(config=None):
     
     # Register teardown for session cleanup (Flask-SQLAlchemy 3.0 compatibility)
     @app.teardown_appcontext
-    def shutdown_session(exception=None):
+    def shutdown_session(_exception=None):
         """Clean up database session after request"""
         db.session.remove()
     
