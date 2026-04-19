@@ -13,7 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
-  const { user, logout } = useAuthStore();
+  const { user, logout, isDemoMode } = useAuthStore();
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState(null);
   const [healthHistory, setHealthHistory] = useState([]);
@@ -29,6 +29,17 @@ export const Dashboard = () => {
       try {
         setLoading(true);
         setError(null);
+
+        // Demo mode: skip real API calls and use placeholder data
+        if (isDemoMode) {
+          setPatientData({ name: 'Demo User', age: 45, medical_conditions: [] });
+          setHealthHistory([]);
+          setMedications([]);
+          setAdherenceMetrics({});
+          setLoading(false);
+          return;
+        }
+
         const patientRes = await patientService.getPatient(user.patient_id);
         setPatientData(patientRes.data.data);
         const historyRes = await patientService.getPatientHistory(user.patient_id, { days: 7 });

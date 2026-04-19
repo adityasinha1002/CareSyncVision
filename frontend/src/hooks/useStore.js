@@ -5,11 +5,21 @@ export const useAuthStore = create((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isDemoMode: false,
   loading: false,
   error: null,
   
   // Initialize auth state from localStorage
   initialize: () => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (isDemoMode) {
+      set({
+        isDemoMode: true,
+        user: { patient_id: 'demo-patient', email: 'demo@example.com', name: 'Demo User' },
+        isAuthenticated: true,
+      });
+      return;
+    }
     const token = localStorage.getItem('jwtToken');
     const patientId = localStorage.getItem('patientId');
     const email = localStorage.getItem('email');
@@ -21,6 +31,22 @@ export const useAuthStore = create((set) => ({
         isAuthenticated: true 
       });
     }
+  },
+
+  // Demo login — no API call required, always succeeds
+  demoLogin: () => {
+    localStorage.setItem('isDemoMode', 'true');
+    localStorage.setItem('patientId', 'demo-patient');
+    localStorage.setItem('email', 'demo@example.com');
+    localStorage.setItem('name', 'Demo User');
+    set({
+      isDemoMode: true,
+      user: { patient_id: 'demo-patient', email: 'demo@example.com', name: 'Demo User' },
+      isAuthenticated: true,
+      loading: false,
+      error: null,
+    });
+    return { success: true };
   },
   
   login: async (email, password) => {
@@ -77,10 +103,12 @@ export const useAuthStore = create((set) => ({
   
   logout: () => {
     authService.clearToken();
+    localStorage.removeItem('jwtToken');
     localStorage.removeItem('patientId');
     localStorage.removeItem('email');
     localStorage.removeItem('name');
-    set({ user: null, token: null, isAuthenticated: false, error: null });
+    localStorage.removeItem('isDemoMode');
+    set({ user: null, token: null, isAuthenticated: false, isDemoMode: false, error: null });
   },
   
   setUser: (user) => set({ user }),

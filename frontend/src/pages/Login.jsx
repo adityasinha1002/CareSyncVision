@@ -12,7 +12,7 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [demoBtnHovered, setDemoBtnHovered] = useState(false);
   const navigate = useNavigate();
-  const { login, googleLogin, loading, error, isAuthenticated } = useAuthStore();
+  const { login, googleLogin, demoLogin, loading, error, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,8 +27,8 @@ export const Login = () => {
     if (result.success) navigate('/dashboard');
   };
 
-  const handleDemoLogin = async () => {
-    const result = await login('demo@example.com', 'DemoPass123');
+  const handleDemoLogin = () => {
+    const result = demoLogin();
     if (result.success) navigate('/dashboard');
   };
 

@@ -27,10 +27,12 @@ api.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
-      // Token expired or invalid - clear auth state
-      localStorage.removeItem('jwtToken');
-      localStorage.removeItem('patientId');
-      window.location.href = '/login';
+      // Don't redirect to login when running in client-side demo mode
+      if (localStorage.getItem('isDemoMode') !== 'true') {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('patientId');
+        window.location.href = '/login';
+      }
     }
     console.error('API Error:', error);
     return Promise.reject(error);
