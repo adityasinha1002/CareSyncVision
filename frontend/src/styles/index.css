@@ -1,4 +1,5 @@
 @tailwind base;
+/* Trigger Vercel rebuild: trivial comment */
 @tailwind components;
 @tailwind utilities;
 
