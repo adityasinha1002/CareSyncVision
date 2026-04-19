@@ -163,6 +163,27 @@ def create_app(config=None):
                 logger.info("Database tables ensured successfully")
             except Exception as create_err:
                 logger.warning(f"Could not ensure database tables: {str(create_err)}")
+
+            # Seed a demo account for quick login and deployment verification.
+            # This is idempotent and only creates the record if it does not already exist.
+            try:
+                demo_patient = Patient.query.filter_by(email='demo@example.com').first()
+                if not demo_patient:
+                    demo_patient = Patient(
+                        email='demo@example.com',
+                        name='Demo User',
+                        age=45,
+                        active=True,
+                    )
+                    demo_patient.set_password('DemoPass123')
+                    db.session.add(demo_patient)
+                    db.session.commit()
+                    logger.info("Demo account seeded successfully (demo@example.com)")
+                else:
+                    logger.info("Demo account already present")
+            except Exception as demo_err:
+                db.session.rollback()
+                logger.warning(f"Could not seed demo account: {str(demo_err)}")
             
             # With Flask-Migrate, tables are created via 'flask db upgrade' command
             # This is called in render.yaml startCommand or during local setup
