@@ -1,63 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none">
   <defs>
-    <linearGradient id="topGrad" x1="250" y1="120" x2="250" y2="340" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0d0000"/>
-      <stop offset="100%" stop-color="#9f1211"/>
-    </linearGradient>
-    <linearGradient id="leftGrad" x1="130" y1="200" x2="250" y2="340" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#1a0000"/>
-      <stop offset="100%" stop-color="#7a0e0e"/>
-    </linearGradient>
-    <linearGradient id="rightGrad" x1="370" y1="200" x2="250" y2="340" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#1a0000"/>
-      <stop offset="100%" stop-color="#7a0e0e"/>
-    </linearGradient>
-    <linearGradient id="centerGrad" x1="250" y1="200" x2="250" y2="340" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#3d0505"/>
+    <linearGradient id="g" x1="250" y1="100" x2="250" y2="370" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#0a0000"/>
+      <stop offset="55%"  stop-color="#3d0505"/>
       <stop offset="100%" stop-color="#9f1211"/>
     </linearGradient>
   </defs>
-
-  <!-- Outer left wing -->
-  <polygon points="110,320 180,260 250,340" fill="url(#leftGrad)" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-  <!-- Outer right wing -->
-  <polygon points="390,320 320,260 250,340" fill="url(#rightGrad)" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-
-  <!-- Far left triangle (lower) -->
-  <polygon points="110,320 155,290 180,260" fill="#4a0808" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-  <!-- Far right triangle (lower) -->
-  <polygon points="390,320 345,290 320,260" fill="#4a0808" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-
-  <!-- Left side face -->
-  <polygon points="180,260 250,120 250,220" fill="url(#topGrad)" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-  <!-- Right side face -->
-  <polygon points="320,260 250,120 250,220" fill="url(#topGrad)" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-
-  <!-- Bottom center diamond face -->
-  <polygon points="180,260 250,220 320,260 250,340" fill="url(#centerGrad)" stroke="#0d0000" stroke-width="3" stroke-linejoin="round"/>
-
-  <!-- Center vertical spine -->
-  <line x1="250" y1="120" x2="250" y2="340" stroke="#0d0000" stroke-width="3"/>
-
-  <!-- Horizontal crossbar -->
-  <line x1="110" y1="320" x2="390" y2="320" stroke="#0d0000" stroke-width="3"/>
-
-  <!-- Diagonals from apex -->
-  <line x1="250" y1="120" x2="180" y2="260" stroke="#0d0000" stroke-width="2.5"/>
-  <line x1="250" y1="120" x2="320" y2="260" stroke="#0d0000" stroke-width="2.5"/>
-
-  <!-- Middle horizontal connector -->
-  <line x1="180" y1="260" x2="320" y2="260" stroke="#0d0000" stroke-width="2.5"/>
-
-  <!-- Diagonals to bottom corners -->
-  <line x1="180" y1="260" x2="110" y2="320" stroke="#0d0000" stroke-width="2.5"/>
-  <line x1="320" y1="260" x2="390" y2="320" stroke="#0d0000" stroke-width="2.5"/>
-
-  <!-- Inner diagonals to base center -->
-  <line x1="180" y1="260" x2="250" y2="340" stroke="#0d0000" stroke-width="2"/>
-  <line x1="320" y1="260" x2="250" y2="340" stroke="#0d0000" stroke-width="2"/>
-
-  <!-- Radial lines from bottom center -->
-  <line x1="250" y1="340" x2="110" y2="320" stroke="#0d0000" stroke-width="2"/>
-  <line x1="250" y1="340" x2="390" y2="320" stroke="#0d0000" stroke-width="2"/>
+  <!--
+    Wireframe geometric crown — stroke only, no fill.
+    Key vertices:
+      TOP  = (250, 100)  — top apex
+      LJ   = (178, 238)  — left inner junction
+      RJ   = (322, 238)  — right inner junction
+      LW   = ( 82, 263)  — left wing tip
+      RW   = (418, 263)  — right wing tip
+      LB   = (122, 342)  — bottom-left corner
+      RB   = (378, 342)  — bottom-right corner
+      BC   = (250, 368)  — bottom center point
+  -->
+  <g stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Outer crown perimeter -->
+    <polyline points="250,100 178,238 82,263 122,342 250,368 378,342 418,263 322,238 250,100"/>
+    <!-- Horizontal crossbar connecting inner junctions -->
+    <line x1="178" y1="238" x2="322" y2="238"/>
+    <!-- Inner diagonals: junctions → bottom center -->
+    <line x1="178" y1="238" x2="250" y2="368"/>
+    <line x1="322" y1="238" x2="250" y2="368"/>
+    <!-- Wing-tip rays → bottom center -->
+    <line x1=" 82" y1="263" x2="250" y2="368"/>
+    <line x1="418" y1="263" x2="250" y2="368"/>
+  </g>
 </svg>
