@@ -82,16 +82,17 @@ def create_app(config=None):
         logger.warning(f"Could not create upload folder: {e}")
     
     # Enable CORS with environment-based origins.
-    # Keep localhost for development and always allow the Netlify production frontend.
+    # Keep localhost for development and always allow all Vercel preview/production frontends.
+    import re as _re
     cors_origins = [
         'http://localhost:3000',
         'http://localhost:5000',
         'https://caresyncvision.vercel.app',  # Vercel production frontend
+        _re.compile(r'https://.*\.vercel\.app'),  # All Vercel preview deployments
     ]
     env_cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
     cors_origins.extend(env_cors_origins)
-    cors_origins = list(dict.fromkeys(cors_origins))
-    logger.info(f"CORS origins configured: {cors_origins}")
+    logger.info(f"CORS origins configured: {[o if isinstance(o, str) else o.pattern for o in cors_origins]}")
     CORS(app, origins=cors_origins, supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
     
     # Initialize database - non-blocking, won't crash if DB unavailable

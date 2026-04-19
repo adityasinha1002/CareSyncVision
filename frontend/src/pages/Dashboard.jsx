@@ -21,7 +21,10 @@ export const Dashboard = () => {
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!user?.patient_id) return;
+      if (!user?.patient_id) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
@@ -72,17 +75,56 @@ export const Dashboard = () => {
     );
   }
 
-
-
-
-
-
-
   return (
-    <div className="dashboard-container">
-      <h1 className="dashboard-header">CareSyncVision Dashboard</h1>
-      <div className="dashboard-card">
-        {/* ...existing dashboard content... */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">CareSyncVision</h1>
+          <p className="text-sm text-gray-500">Welcome back, {user?.name || 'User'}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/health-input')}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition"
+          >
+            <Plus className="w-4 h-4" /> Add Vitals
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-red-600 border border-gray-200 rounded-lg transition"
+          >
+            <LogOut className="w-4 h-4" /> Logout
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Error banner */}
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Health Summary Cards */}
+        <HealthSummary data={patientData} adherenceMetrics={adherenceMetrics} />
+
+        {/* Risk Score Chart */}
+        <RiskScoreChart data={healthHistory} />
+
+        {/* Bottom Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <MedicationTracker />
+          </div>
+          <div className="lg:col-span-1">
+            <AlertPanel patientId={user?.patient_id} />
+          </div>
+          <div className="lg:col-span-1">
+            <ESPDeviceDemo />
+          </div>
+        </div>
       </div>
     </div>
   );

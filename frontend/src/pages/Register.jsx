@@ -17,7 +17,7 @@ export const Register = () => {
   const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, initialize } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -107,10 +107,14 @@ export const Register = () => {
       );
 
       if (response.data.success) {
-        // Auto-login after registration
-        const { token, patient_id } = response.data;
+        // Auto-login after registration: persist credentials and sync store
+        const { token, patient_id, name } = response.data;
         authService.setToken(token);
         localStorage.setItem('patientId', patient_id);
+        localStorage.setItem('email', formData.email);
+        localStorage.setItem('name', name || '');
+        // Sync the Zustand store so isAuthenticated becomes true before navigation
+        initialize();
         
         setSuccess('Account created successfully! Redirecting to dashboard...');
         setTimeout(() => {
