@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X, Bell, CheckCircle } from 'lucide-react';
 import { patientService } from '../services/api';
 
 export const AlertPanel = ({ patientId }) => {
@@ -11,9 +11,7 @@ export const AlertPanel = ({ patientId }) => {
     const loadAlerts = async () => {
       setLoading(true);
       try {
-        // Example: fetch alerts from API or generate demo alerts
         let generatedAlerts = [];
-        // ...fetch or generate alerts logic here...
         setAlerts(generatedAlerts);
       } catch (err) {
         console.error('Failed to load alerts:', err);
@@ -21,24 +19,14 @@ export const AlertPanel = ({ patientId }) => {
         setLoading(false);
       }
     };
-    if (patientId) {
-      loadAlerts();
-    }
+    if (patientId) loadAlerts();
   }, [patientId]);
 
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'critical':
-        return 'bg-red-100 border-red-300 text-red-800';
-      case 'high':
-        return 'bg-orange-100 border-orange-300 text-orange-800';
-      case 'medium':
-        return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-      case 'low':
-        return 'bg-blue-100 border-blue-300 text-blue-800';
-      default:
-        return 'bg-gray-100 border-gray-300 text-gray-800';
-    }
+  const severityConfig = {
+    critical: { bg: 'bg-red-50',    border: 'border-red-200',    text: 'text-red-700',    dot: '#dc2626', label: 'Critical' },
+    high:     { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', dot: '#d97706', label: 'High'     },
+    medium:   { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', dot: '#ca8a04', label: 'Medium'   },
+    low:      { bg: 'bg-blue-50',   border: 'border-blue-200',   text: 'text-blue-700',   dot: '#2563eb', label: 'Low'      },
   };
 
   const handleDismiss = (alertId) => {
@@ -48,37 +36,73 @@ export const AlertPanel = ({ patientId }) => {
   const visibleAlerts = alerts.filter(a => !dismissedAlerts.has(a.alert_id));
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold mb-4">Active Alerts</h2>
-      {loading ? (
-        <p className="text-gray-600 text-sm">Loading alerts...</p>
-      ) : visibleAlerts.length === 0 ? (
-        <p className="text-gray-600 text-sm">✓ No active alerts</p>
-      ) : (
-        <div className="space-y-3">
-          {visibleAlerts.map((alert) => (
-            <div
-              key={alert.alert_id}
-              className={`border-l-4 p-3 rounded flex items-start justify-between ${getSeverityColor(alert.severity)}`}
+    <div className="bg-white rounded-xl border border-gray-100 shadow-soft overflow-hidden">
+      <div className="h-0.5" style={{ backgroundColor: '#9f1211' }} />
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4" style={{ color: '#9f1211' }} />
+            <h2 className="text-base font-bold text-gray-900">Active Alerts</h2>
+          </div>
+          {visibleAlerts.length > 0 && (
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full text-white"
+              style={{ backgroundColor: '#9f1211' }}
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <p className="font-semibold capitalize text-sm">{alert.alert_type}</p>
-                </div>
-                <p className="text-sm mt-1">{alert.message}</p>
-                <p className="text-xs opacity-75 mt-1">{alert.created_at}</p>
-              </div>
-              <button
-                onClick={() => handleDismiss(alert.alert_id)}
-                className="ml-2 flex-shrink-0 opacity-50 hover:opacity-100 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
+              {visibleAlerts.length}
+            </span>
+          )}
         </div>
-      )}
+
+        {loading ? (
+          <div className="py-8 flex items-center justify-center">
+            <div
+              className="w-6 h-6 rounded-full border-2 border-gray-100"
+              style={{ borderTopColor: '#9f1211', animation: 'spin 0.8s linear infinite' }}
+            />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        ) : visibleAlerts.length === 0 ? (
+          <div className="py-8 text-center">
+            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            </div>
+            <p className="text-sm font-medium text-gray-700">All clear</p>
+            <p className="text-xs text-gray-400 mt-1">No active alerts at this time</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {visibleAlerts.map((alert) => {
+              const cfg = severityConfig[alert.severity] || severityConfig.low;
+              return (
+                <div
+                  key={alert.alert_id}
+                  className={`rounded-lg border p-3.5 flex items-start justify-between ${cfg.bg} ${cfg.border}`}
+                >
+                  <div className="flex items-start gap-2.5 flex-1">
+                    <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: cfg.dot }} />
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className={`text-xs font-bold uppercase tracking-wide ${cfg.text}`}>{cfg.label}</p>
+                        <p className={`text-xs font-semibold ${cfg.text} opacity-75 capitalize`}>{alert.alert_type}</p>
+                      </div>
+                      <p className={`text-sm ${cfg.text}`}>{alert.message}</p>
+                      <p className={`text-xs mt-1 ${cfg.text} opacity-60`}>{alert.created_at}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDismiss(alert.alert_id)}
+                    className={`ml-2 flex-shrink-0 ${cfg.text} opacity-50 hover:opacity-100 transition-opacity p-0.5`}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
