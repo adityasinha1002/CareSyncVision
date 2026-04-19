@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { HealthInput } from './pages/HealthInput';
+import { Welcome } from './pages/Welcome';
 
 function App() {
   const { isAuthenticated, initialize } = useAuthStore();
@@ -24,6 +25,10 @@ function App() {
         <Route
           path="/register"
           element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
+        />
+        <Route
+          path="/welcome"
+          element={isAuthenticated ? <Welcome /> : <Navigate to="/login" />}
         />
         <Route
           path="/dashboard"

@@ -150,8 +150,8 @@ export const HealthInput = () => {
             </button>
             <span className="text-gray-200 select-none">|</span>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded flex items-center justify-center" style={{ backgroundColor: '#9f1211' }}>
-                <Activity className="w-3.5 h-3.5 text-white" />
+              <div className="w-7 h-7 rounded flex items-center justify-center bg-white border border-gray-100 shadow-sm">
+                <img src="/logo.svg" alt="CareSyncVision" className="w-5 h-5" />
               </div>
               <span className="text-base font-bold text-gray-900" style={{ letterSpacing: '-0.015em' }}>
                 Record Vital Signs

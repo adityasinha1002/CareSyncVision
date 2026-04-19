@@ -66,7 +66,7 @@ export const Register = () => {
         authService.setToken(token);
         localStorage.setItem('patientId', patient_id);
         setSuccess('Account created successfully! Redirecting...');
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setTimeout(() => navigate('/welcome'), 1500);
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');

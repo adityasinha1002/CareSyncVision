@@ -24,17 +24,17 @@ export const Login = () => {
     e.preventDefault();
     if (!email || !password) return;
     const result = await login(email, password);
-    if (result.success) navigate('/dashboard');
+    if (result.success) navigate('/welcome');
   };
 
   const handleDemoLogin = () => {
     const result = demoLogin();
-    if (result.success) navigate('/dashboard');
+    if (result.success) navigate('/welcome');
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
     const result = await googleLogin(credentialResponse.credential);
-    if (result.success) navigate('/dashboard');
+    if (result.success) navigate('/welcome');
   };
 
   const handleGoogleError = () => {

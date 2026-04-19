@@ -7,8 +7,8 @@ import MedicationTracker from '../components/MedicationTracker';
 import { AlertPanel } from '../components/AlertPanel';
 import { ESPDeviceDemo } from '../components/ESPDeviceDemo';
 import {
-  LogOut, Plus, Heart, LayoutDashboard, Activity, Pill,
-  Bell, Settings, ChevronRight, User, Menu, X
+  LogOut, Plus, LayoutDashboard, Activity, Pill,
+  Bell, ChevronRight, User, Menu, X, ChevronDown, LogIn
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +22,7 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -87,14 +88,32 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Demo mode banner */}
+      {isDemoMode && (
+        <div className="w-full bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between flex-shrink-0 z-40">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Demo Mode</span>
+            <span className="hidden sm:inline text-xs text-amber-600">· Sample data — no real account needed</span>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 hover:text-amber-900 underline underline-offset-2"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Exit Demo &amp; Sign In
+          </button>
+        </div>
+      )}
+
+      <div className="flex flex-1 min-h-0">
       {/* Sidebar — Desktop */}
       <aside className="hidden lg:flex w-64 flex-col bg-white border-r border-gray-100 shadow-soft">
         {/* Logo */}
         <div className="px-6 py-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9f1211' }}>
-              <Heart className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-100 shadow-sm">
+              <img src="/logo.svg" alt="CareSyncVision logo" className="w-6 h-6" />
             </div>
             <span className="font-bold text-gray-900 text-base tracking-tight">CareSyncVision</span>
           </div>
@@ -122,17 +141,22 @@ export const Dashboard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : 'Patient'}
+                {user?.name || 'Patient'}
               </p>
               <p className="text-xs text-gray-400 truncate">{user?.email}</p>
             </div>
           </div>
+          {isDemoMode && (
+            <div className="px-3 mb-1">
+              <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded">Demo Mode</span>
+            </div>
+          )}
           <button
             onClick={handleLogout}
             className="nav-item w-full text-left text-red-500 hover:bg-red-50 hover:text-red-600"
           >
             <LogOut className="w-4 h-4" />
-            Sign Out
+            {isDemoMode ? 'Exit Demo & Sign In' : 'Sign Out'}
           </button>
         </div>
       </aside>
@@ -144,8 +168,8 @@ export const Dashboard = () => {
           <aside className="relative z-50 w-64 bg-white flex flex-col h-full shadow-xl">
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9f1211' }}>
-                  <Heart className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-100 shadow-sm">
+                  <img src="/logo.svg" alt="CareSyncVision logo" className="w-6 h-6" />
                 </div>
                 <span className="font-bold text-gray-900 text-base">CareSyncVision</span>
               </div>
@@ -163,8 +187,13 @@ export const Dashboard = () => {
               ))}
             </nav>
             <div className="px-3 py-4 border-t border-gray-100">
+              {isDemoMode && (
+                <div className="px-3 mb-2">
+                  <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded">Demo Mode</span>
+                </div>
+              )}
               <button onClick={handleLogout} className="nav-item w-full text-left text-red-500 hover:bg-red-50">
-                <LogOut className="w-4 h-4" /> Sign Out
+                <LogOut className="w-4 h-4" /> {isDemoMode ? 'Exit Demo & Sign In' : 'Sign Out'}
               </button>
             </div>
           </aside>
@@ -199,6 +228,53 @@ export const Dashboard = () => {
             <button className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:border-gray-300 transition-colors">
               <Bell className="w-4 h-4" />
             </button>
+
+            {/* User dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen((v) => !v)}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+                  <User className="w-3.5 h-3.5 text-gray-500" />
+                </div>
+                <span className="text-sm font-medium text-gray-700 hidden sm:block max-w-[7rem] truncate">
+                  {user?.name || 'Patient'}
+                </span>
+                {isDemoMode && (
+                  <span className="hidden sm:inline text-xs bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded">
+                    Demo
+                  </span>
+                )}
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden sm:block" />
+              </button>
+
+              {userMenuOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1.5 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1.5 overflow-hidden">
+                    {/* User info */}
+                    <div className="px-3.5 py-2.5 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-900 truncate">{user?.name || 'Patient'}</p>
+                      <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                      {isDemoMode && (
+                        <span className="mt-1 inline-block text-xs bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded">
+                          Demo Mode
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                      className="w-full text-left px-3.5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      {isDemoMode ? 'Exit Demo & Sign In' : 'Sign Out'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
@@ -256,6 +332,7 @@ export const Dashboard = () => {
             </div>
           )}
         </main>
+      </div>
       </div>
     </div>
   );
