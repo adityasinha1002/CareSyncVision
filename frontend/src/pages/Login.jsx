@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../hooks/useStore';
 import { GoogleLogin } from '@react-oauth/google';
-import { Heart, Eye, EyeOff, ArrowRight, Activity, Shield, Zap } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Activity, Shield, Zap } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -64,7 +64,7 @@ export const Login = () => {
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-16">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <Heart className="w-6 h-6" style={{ color: '#9f1211' }} />
+              <img src="/logo.svg" alt="CareSyncVision logo" className="w-7 h-7" />
             </div>
             <span className="text-white text-xl font-bold tracking-tight">CareSyncVision</span>
           </div>
@@ -98,7 +98,7 @@ export const Login = () => {
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-3 mb-10">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9f1211' }}>
-            <Heart className="w-5 h-5 text-white" />
+            <img src="/logo.svg" alt="CareSyncVision logo" className="w-6 h-6" style={{ filter: 'brightness(0) invert(1)' }} />
           </div>
           <span className="text-lg font-bold text-gray-900">CareSyncVision</span>
         </div>
