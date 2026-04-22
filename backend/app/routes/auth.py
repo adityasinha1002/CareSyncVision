@@ -12,7 +12,7 @@ import json as json_lib
 import urllib.request
 import urllib.error
 from sqlalchemy import select
-from app.services.auth_service import AuthService
+from app.services.auth_service import AuthService, JWT_SECRET, JWT_ALGORITHM
 from app.models.patient_model import Patient
 from .. import db
 
@@ -188,16 +188,13 @@ def login():
                 logger.warning(f"Login failed: Patient {patient_id} not found")
                 return jsonify({"error": "Invalid credentials"}), 401
             
-            # Legacy: if patient has a password hash, verify it; otherwise use hardcoded check
-            if patient.password_hash:
-                if not patient.check_password(legacy_password):
-                    logger.warning(f"Login failed: Invalid password for patient {patient_id}")
-                    return jsonify({"error": "Invalid credentials"}), 401
-            else:
-                # Fallback for existing patients without password_hash
-                if legacy_password != "password":
-                    logger.warning(f"Login failed: Invalid password for patient {patient_id}")
-                    return jsonify({"error": "Invalid credentials"}), 401
+            # Patients without a password hash must register via the email/password flow
+            if not patient.password_hash:
+                logger.warning("Login failed: patient has no password set — requires email registration")
+                return jsonify({"error": "Invalid credentials"}), 401
+            if not patient.check_password(legacy_password):
+                logger.warning("Login failed: invalid password for legacy patient_id login")
+                return jsonify({"error": "Invalid credentials"}), 401
         
         # Generate JWT token
         token = AuthService.generate_token(patient.patient_id)
@@ -282,11 +279,16 @@ def refresh_token():
         if not token:
             return jsonify({'error': 'Token is missing'}), 401
         
-        # Verify token (even if expired, decode it)
+        # Verify token signature but allow expired tokens (that's the point of refresh)
         try:
             import jwt
-            payload = jwt.decode(token, '', algorithms=['HS256'], options={"verify_signature": False})
-        except:
+            payload = jwt.decode(
+                token,
+                JWT_SECRET,
+                algorithms=[JWT_ALGORITHM],
+                options={"verify_exp": False}
+            )
+        except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
         
         patient_id = payload.get('patient_id')
