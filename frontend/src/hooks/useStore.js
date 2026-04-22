@@ -8,13 +8,16 @@ export const useAuthStore = create((set) => ({
   isDemoMode: false,
   loading: false,
   error: null,
-  
+  aiEnabled: false,
+
   // Initialize auth state from localStorage
   initialize: () => {
     const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    const aiEnabled = localStorage.getItem('aiEnabled') === 'true';
     if (isDemoMode) {
       set({
         isDemoMode: true,
+        aiEnabled,
         user: { patient_id: 'demo-patient', email: 'demo@example.com', name: 'Demo User' },
         isAuthenticated: true,
       });
@@ -25,12 +28,19 @@ export const useAuthStore = create((set) => ({
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
     if (token && patientId) {
-      set({ 
-        token, 
-        user: { patient_id: patientId, email, name }, 
-        isAuthenticated: true 
+      set({
+        token,
+        user: { patient_id: patientId, email, name },
+        isAuthenticated: true,
+        aiEnabled,
       });
     }
+  },
+
+  // Toggle AI analysis features on / off
+  setAiEnabled: (enabled) => {
+    localStorage.setItem('aiEnabled', enabled ? 'true' : 'false');
+    set({ aiEnabled: enabled });
   },
 
   // Demo login — no API call required, always succeeds
@@ -108,7 +118,8 @@ export const useAuthStore = create((set) => ({
     localStorage.removeItem('email');
     localStorage.removeItem('name');
     localStorage.removeItem('isDemoMode');
-    set({ user: null, token: null, isAuthenticated: false, isDemoMode: false, error: null });
+    localStorage.removeItem('aiEnabled');
+    set({ user: null, token: null, isAuthenticated: false, isDemoMode: false, aiEnabled: false, error: null });
   },
   
   setUser: (user) => set({ user }),

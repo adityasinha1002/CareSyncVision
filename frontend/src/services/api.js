@@ -2,6 +2,10 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caresyncvision-api-production.up.railway.app/api';
 
+// AI server is an optional separate service.
+// Set VITE_AI_SERVER_URL in Vercel env vars if you deploy the AI server.
+const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || '';
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -9,6 +13,15 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Axios instance for the AI server — only used when aiEnabled is true.
+const aiApi = AI_SERVER_URL
+  ? axios.create({
+      baseURL: AI_SERVER_URL,
+      timeout: 30000,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  : null;
 
 // Request interceptor to add JWT token
 api.interceptors.request.use(
@@ -21,6 +34,20 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// Attach the same JWT token to AI server requests when it's available.
+if (aiApi) {
+  aiApi.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('jwtToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+}
 
 // Response interceptor for error handling and token refresh
 api.interceptors.response.use(
@@ -137,6 +164,40 @@ export const espDeviceService = {
   
   getFirmwareInfo: () =>
     api.get('/esp-device/firmware'),
+};
+
+// AI Analysis Service
+// All methods throw if the AI server URL is not configured.
+const _requireAiApi = () => {
+  if (!aiApi) throw new Error('AI server URL is not configured (VITE_AI_SERVER_URL)');
+  return aiApi;
+};
+
+export const aiService = {
+  isAvailable: () => Boolean(aiApi),
+
+  getStatus: () =>
+    _requireAiApi().get('/api/health'),
+
+  submitVitals: (patientId, vitals) =>
+    _requireAiApi().post('/api/patient/vitals', { patient_id: patientId, ...vitals }),
+
+  submitHealthData: (imageBlob, patientId, sessionId) => {
+    const instance = _requireAiApi();
+    return instance.post('/api/patient/health-data', imageBlob, {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'X-Patient-ID': patientId,
+        'X-Session-ID': sessionId || '',
+      },
+    });
+  },
+
+  logMedication: (patientId, medicationData) =>
+    _requireAiApi().post('/api/patient/medication', {
+      patient_id: patientId,
+      ...medicationData,
+    }),
 };
 
 export default api;

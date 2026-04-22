@@ -11,9 +11,11 @@ import os
 import json
 import uuid
 from datetime import datetime
-from flask import Flask, request, jsonify
+from functools import wraps
+from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+import jwt as _jwt
 
 # Import pipeline components
 from engines.health_analysis_engine import HealthAnalysisEngine
@@ -33,7 +35,21 @@ logger = logging.getLogger(__name__)
 
 # Flask app initialization
 app = Flask(__name__)
-CORS(app)
+
+# Only allow the production Vercel frontend (and localhost for development).
+_cors_origins = [
+    'https://caresyncvision.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+]
+_env_origins = [o.strip() for o in os.getenv('CORS_ORIGINS', '').split(',') if o.strip()]
+_cors_origins.extend(_env_origins)
+CORS(app, origins=list(dict.fromkeys(_cors_origins)), supports_credentials=True,
+     allow_headers=['Content-Type', 'Authorization'])
+
+# JWT configuration — must match the main backend
+_JWT_SECRET = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
+_JWT_ALGORITHM = 'HS256'
 
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -43,6 +59,33 @@ MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_UPLOAD_SIZE
+
+# ================================================================================
+# AUTHENTICATION
+# ================================================================================
+
+def token_required(f):
+    """Decorator: require a valid JWT issued by the main backend."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header.split(' ', 1)[1]
+        # Also accept token in X-Auth-Token header (for ESP32 devices)
+        if not token:
+            token = request.headers.get('X-Auth-Token')
+        if not token:
+            return jsonify({'error': 'Authentication token is missing'}), 401
+        try:
+            payload = _jwt.decode(token, _JWT_SECRET, algorithms=[_JWT_ALGORITHM])
+            g.patient_id = payload.get('patient_id')
+        except _jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except _jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(*args, **kwargs)
+    return decorated
 
 # ================================================================================
 # PIPELINE COMPONENTS INITIALIZATION
@@ -89,6 +132,7 @@ def health_check():
 # ================================================================================
 
 @app.route('/api/patient/health-data', methods=['POST'])
+@token_required
 def receive_patient_health_data():
     """
     Endpoint for ESP32-CAM to send patient health monitoring data
@@ -96,27 +140,30 @@ def receive_patient_health_data():
     """
     try:
         logger.info("Received patient health data")
-        
-        patient_id = request.headers.get('X-Patient-ID', 'unknown')
+
+        # Use patient_id from the verified JWT (g.patient_id) for the filename —
+        # never trust the untrusted X-Patient-ID header for filesystem operations.
+        patient_id = g.patient_id or 'unknown'
         session_id = request.headers.get('X-Session-ID', 'unknown')
         device_id = request.headers.get('X-Device-ID', 'ESP32-CAM-PATIENT-MON')
         timestamp = request.headers.get('X-Timestamp', str(datetime.now().timestamp()))
-        
+
         # Validate image data
         if not request.data:
             logger.warning("Empty health data received")
             return jsonify({"error": "Empty health data"}), 400
-        
-        # Save image temporarily for analysis
+
+        # Build a safe filename using only known-safe values (UUID + timestamp).
         health_id = str(uuid.uuid4())[:8]
-        image_filename = f"health_{patient_id}_{health_id}_{int(datetime.now().timestamp()*1000)}.jpg"
+        safe_ts = int(datetime.now().timestamp() * 1000)
+        image_filename = secure_filename(f"health_{health_id}_{safe_ts}.jpg")
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-        
+
         with open(image_path, 'wb') as f:
             f.write(request.data)
-        
-        logger.info(f"Health data saved: {image_filename} ({len(request.data)} bytes)")
-        
+
+        logger.info("Health data saved (%d bytes)", len(request.data))
+
         # Process through patient monitoring pipeline
         result = process_patient_pipeline(image_path, {
             'patient_id': patient_id,
@@ -125,7 +172,7 @@ def receive_patient_health_data():
             'timestamp': timestamp,
             'health_id': health_id
         })
-        
+
         return jsonify(result), result.get('status_code', 200)
         
     except Exception as e:
@@ -133,6 +180,7 @@ def receive_patient_health_data():
         return jsonify({"error": "Server error", "message": str(e)}), 500
 
 @app.route('/api/patient/vitals', methods=['POST'])
+@token_required
 def receive_patient_vitals():
     """
     Endpoint for vital signs data (heart rate, SpO2, temperature, etc.)
@@ -142,14 +190,14 @@ def receive_patient_vitals():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
-        
-        patient_id = data.get('patient_id')
-        logger.info(f"Received vitals for patient {patient_id}: {data}")
-        
-        # Validate required fields
+
+        # Use patient_id from the validated JWT rather than trusting the request body.
+        patient_id = g.patient_id
         if not patient_id:
-            return jsonify({"error": "Missing patient_id"}), 400
-        
+            return jsonify({"error": "Missing patient_id in token"}), 400
+
+        logger.info("Received vitals for authenticated patient")
+
         # Log vital signs
         vitals_event = {
             'timestamp': get_timestamp(),
@@ -161,9 +209,9 @@ def receive_patient_vitals():
             'activity_level': data.get('activity_level'),
             'status': 'recorded'
         }
-        
-        logger.info(f"Vitals event recorded: {vitals_event}")
-        
+
+        logger.info("Vitals event recorded for authenticated patient")
+
         return jsonify({
             "status": "success",
             "message": "Vital signs recorded",
@@ -175,6 +223,7 @@ def receive_patient_vitals():
         return jsonify({"error": "Server error"}), 500
 
 @app.route('/api/patient/medication', methods=['POST'])
+@token_required
 def receive_medication_response():
     """
     Endpoint to log patient medication administration and response
@@ -184,14 +233,14 @@ def receive_medication_response():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
-        
-        patient_id = data.get('patient_id')
-        logger.info(f"Received medication response for patient {patient_id}")
-        
-        # Validate required fields
+
+        # Use patient_id from the validated JWT rather than trusting the request body.
+        patient_id = g.patient_id
         if not patient_id or not data.get('medication_id'):
             return jsonify({"error": "Missing required fields"}), 400
-        
+
+        logger.info("Received medication response for authenticated patient")
+
         # Log medication administration
         med_event = {
             'timestamp': get_timestamp(),
@@ -205,13 +254,13 @@ def receive_medication_response():
             'side_effects': data.get('side_effects'),
             'status': 'logged'
         }
-        
-        logger.info(f"Medication response logged: {med_event}")
-        
+
+        logger.info("Medication response logged for authenticated patient")
+
         # Trigger medication adjustment analysis
         adjustment_result = medication_adjustment_engine.analyze_response(med_event)
-        logger.info(f"Medication adjustment analysis: {adjustment_result}")
-        
+        logger.info("Medication adjustment analysis complete")
+
         return jsonify({
             "status": "success",
             "message": "Medication response recorded",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../hooks/useStore';
-import { patientService, medicationService } from '../services/api';
+import { patientService, medicationService, aiService } from '../services/api';
 import { HealthSummary } from '../components/HealthSummary';
 import { RiskScoreChart } from '../components/RiskScoreChart';
 import MedicationTracker from '../components/MedicationTracker';
@@ -8,12 +8,13 @@ import { AlertPanel } from '../components/AlertPanel';
 import { ESPDeviceDemo } from '../components/ESPDeviceDemo';
 import {
   LogOut, Plus, LayoutDashboard, Activity, Pill,
-  Bell, ChevronRight, User, Menu, X, ChevronDown, LogIn
+  Bell, ChevronRight, User, Menu, X, ChevronDown, LogIn,
+  BrainCircuit, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
-  const { user, logout, isDemoMode } = useAuthStore();
+  const { user, logout, isDemoMode, aiEnabled, setAiEnabled } = useAuthStore();
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState(null);
   const [healthHistory, setHealthHistory] = useState([]);
@@ -23,6 +24,7 @@ export const Dashboard = () => {
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [aiStatus, setAiStatus] = useState(null);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -60,6 +62,20 @@ export const Dashboard = () => {
     const interval = setInterval(loadDashboardData, 30000);
     return () => clearInterval(interval);
   }, [user?.patient_id]);
+
+  // Check AI server availability whenever AI is enabled
+  useEffect(() => {
+    if (!aiEnabled) { setAiStatus(null); return; }
+    if (!aiService.isAvailable()) {
+      setAiStatus('unavailable');
+      return;
+    }
+    aiService.getStatus()
+      .then(() => setAiStatus('online'))
+      .catch(() => setAiStatus('offline'));
+  }, [aiEnabled]);
+
+  const handleAiToggle = () => setAiEnabled(!aiEnabled);
 
   const handleLogout = () => {
     logout();
@@ -102,6 +118,23 @@ export const Dashboard = () => {
           >
             <LogIn className="w-3.5 h-3.5" />
             Exit Demo &amp; Sign In
+          </button>
+        </div>
+      )}
+
+      {/* AI enabled banner */}
+      {aiEnabled && (
+        <div className="w-full border-b px-4 py-1.5 flex items-center gap-2 flex-shrink-0 z-40"
+             style={{ backgroundColor: '#fdf2f2', borderColor: '#fca5a5' }}>
+          <BrainCircuit className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#9f1211' }} />
+          <span className="text-xs font-semibold" style={{ color: '#9f1211' }}>AI Analysis Enabled</span>
+          {aiStatus === 'online' && <span className="text-xs text-green-600">· Server connected</span>}
+          {aiStatus === 'offline' && <span className="text-xs text-red-500">· Server unreachable — check AI server deployment</span>}
+          {aiStatus === 'unavailable' && <span className="text-xs text-gray-500">· Configure VITE_AI_SERVER_URL to connect</span>}
+          <button onClick={handleAiToggle}
+            className="ml-auto text-xs underline underline-offset-2"
+            style={{ color: '#9f1211' }}>
+            Disable
           </button>
         </div>
       )}
@@ -264,6 +297,35 @@ export const Dashboard = () => {
                         </span>
                       )}
                     </div>
+
+                    {/* AI Analysis toggle */}
+                    <div className="px-3.5 py-2.5 border-b border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <BrainCircuit className="w-3.5 h-3.5 text-gray-500" />
+                          <span className="text-xs font-medium text-gray-700">AI Analysis</span>
+                        </div>
+                        <button
+                          onClick={handleAiToggle}
+                          className="flex items-center gap-1 text-xs font-semibold transition-colors"
+                          style={{ color: aiEnabled ? '#9f1211' : '#9ca3af' }}
+                          title={aiEnabled ? 'Disable AI Analysis' : 'Enable AI Analysis'}
+                        >
+                          {aiEnabled
+                            ? <ToggleRight className="w-5 h-5" />
+                            : <ToggleLeft className="w-5 h-5" />}
+                          {aiEnabled ? 'On' : 'Off'}
+                        </button>
+                      </div>
+                      {aiEnabled && aiStatus && (
+                        <p className={`mt-1 text-xs ${aiStatus === 'online' ? 'text-green-600' : 'text-red-500'}`}>
+                          {aiStatus === 'online' ? '● AI server connected' :
+                           aiStatus === 'offline' ? '● AI server unreachable' :
+                           '● AI server not configured'}
+                        </p>
+                      )}
+                    </div>
+
                     <button
                       onClick={() => { setUserMenuOpen(false); handleLogout(); }}
                       className="w-full text-left px-3.5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"

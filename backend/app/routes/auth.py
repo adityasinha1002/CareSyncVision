@@ -8,11 +8,9 @@ from datetime import datetime
 import logging
 import re
 import os
-import json as json_lib
-import urllib.request
-import urllib.error
 from sqlalchemy import select
 from app.services.auth_service import AuthService, JWT_SECRET, JWT_ALGORITHM
+from app.services.google_oauth_service import GoogleOAuthService
 from app.models.patient_model import Patient
 from .. import db
 
@@ -337,35 +335,10 @@ def google_auth():
         if not credential:
             return jsonify({"error": "Google credential token is required"}), 400
 
-        # ---------------------------------------------------------------
-        # Verify the ID token with Google's public tokeninfo endpoint.
-        # This works without server-side libraries and without a secret.
-        # The token is URL-encoded to prevent URL injection.
-        # ---------------------------------------------------------------
-        try:
-            import urllib.parse as _parse
-            url = 'https://oauth2.googleapis.com/tokeninfo?' + _parse.urlencode({'id_token': credential})
-            req = urllib.request.Request(url, headers={'Accept': 'application/json'})
-            with urllib.request.urlopen(req, timeout=10) as response:
-                idinfo = json_lib.loads(response.read().decode())
-        except urllib.error.HTTPError as http_err:
-            logger.warning(f"Google token verification HTTP error {http_err.code}")
+        # Verify the Google ID token via the GoogleOAuthService.
+        idinfo = GoogleOAuthService.verify_id_token(credential)
+        if idinfo is None:
             return jsonify({"error": "Invalid Google token"}), 401
-        except Exception as e:
-            logger.error(f"Google token verification error: {str(e)}", exc_info=True)
-            return jsonify({"error": "Failed to verify Google token"}), 401
-
-        # Optionally enforce that the token was issued for this application.
-        google_client_id = os.getenv('GOOGLE_CLIENT_ID')
-        if google_client_id and idinfo.get('aud') != google_client_id:
-            logger.warning("Google token audience mismatch — token not intended for this app")
-            return jsonify({"error": "Token not issued for this application"}), 401
-
-        # Require a verified email from Google.
-        # The tokeninfo endpoint may return email_verified as a boolean or a string.
-        email_verified = idinfo.get('email_verified', False)
-        if not (email_verified is True or str(email_verified).lower() == 'true'):
-            return jsonify({"error": "Google account email is not verified"}), 401
 
         email = idinfo.get('email', '').strip()
         name = idinfo.get('name') or email
