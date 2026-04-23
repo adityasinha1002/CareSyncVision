@@ -31,42 +31,42 @@ export default function MedicationTracker() {
   };
 
   return (
-    <div className="dashboard-card border-primary">
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary">
-        <Clock className="w-5 h-5 text-primary" /> Medication Tracker
+    <div className="dashboard-card">
+      <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <Clock className="w-4 h-4 text-primary" /> Medication Tracker
       </h2>
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>
+        <div className="mb-4 p-3 bg-red-950/40 border border-red-700/50 text-red-400 rounded text-sm">{error}</div>
       )}
       {medications.length === 0 ? (
-        <div className="text-gray-400">No medications scheduled.</div>
+        <div className="text-gray-600 text-sm">No medications scheduled.</div>
       ) : (
-        <ul className="divide-y divide-gray-100">
+        <ul className="divide-y divide-[#1e1e1e]">
           {medications.map((med) => {
             const isTaken = med.adherence_status === 'taken';
             const isMissed = med.adherence_status === 'missed';
             return (
               <li key={med.id} className="py-3 flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-primary">{med.name}</span>
-                  <span className="ml-2 text-xs text-gray-500">{med.dosage} • {med.scheduled_time}</span>
+                  <span className="font-semibold text-white">{med.name}</span>
+                  <span className="ml-2 text-xs text-gray-600 font-mono">{med.dosage} · {med.scheduled_time}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {isTaken ? (
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4" /> Taken
+                    <span className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary rounded-full text-xs font-bold flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" /> Taken
                     </span>
                   ) : isMissed ? (
-                    <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" /> Missed
+                    <span className="px-3 py-1 bg-red-950/40 border border-red-700/40 text-red-400 rounded-full text-xs font-bold flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" /> Missed
                     </span>
                   ) : (
                     <button
                       onClick={() => handleMedicationTaken(med.id)}
                       disabled={loading[med.id]}
-                      className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium flex items-center gap-1 hover:bg-orange-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 bg-yellow-950/40 border border-yellow-700/40 text-yellow-400 rounded-full text-xs font-bold flex items-center gap-1 hover:bg-yellow-900/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Clock className="w-4 h-4" />
+                      <Clock className="w-3.5 h-3.5" />
                       {loading[med.id] ? 'Recording...' : 'Pending'}
                     </button>
                   )}

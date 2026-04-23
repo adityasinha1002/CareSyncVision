@@ -48,12 +48,14 @@ export const AlertPanel = ({ patientId }) => {
   const visibleAlerts = alerts.filter(a => !dismissedAlerts.has(a.alert_id));
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold mb-4">Active Alerts</h2>
+    <div className="bg-[#111] rounded-lg border border-[#2a2a2a] p-6">
+      <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Active Alerts</h2>
       {loading ? (
         <p className="text-gray-600 text-sm">Loading alerts...</p>
       ) : visibleAlerts.length === 0 ? (
-        <p className="text-gray-600 text-sm">✓ No active alerts</p>
+        <p className="text-gray-600 text-sm flex items-center gap-2">
+          <span className="text-primary">✓</span> No active alerts
+        </p>
       ) : (
         <div className="space-y-3">
           {visibleAlerts.map((alert) => (
@@ -67,7 +69,7 @@ export const AlertPanel = ({ patientId }) => {
                   <p className="font-semibold capitalize text-sm">{alert.alert_type}</p>
                 </div>
                 <p className="text-sm mt-1">{alert.message}</p>
-                <p className="text-xs opacity-75 mt-1">{alert.created_at}</p>
+                <p className="text-xs opacity-60 mt-1 font-mono">{alert.created_at}</p>
               </div>
               <button
                 onClick={() => handleDismiss(alert.alert_id)}

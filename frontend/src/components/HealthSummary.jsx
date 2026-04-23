@@ -33,47 +33,47 @@ export const HealthSummary = ({ data, adherenceMetrics }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
       {/* Risk Score Card */}
-      <div className="dashboard-card flex flex-col justify-between border-primary">
+      <div className="dashboard-card flex flex-col justify-between border-primary/25">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Risk Score</span>
-          <TrendingUp className="w-7 h-7 text-primary" />
+          <span className="text-xs text-gray-500 uppercase tracking-widest">Risk Score</span>
+          <TrendingUp className="w-6 h-6 text-primary" />
         </div>
-        <div className="text-3xl font-bold text-primary">{riskScore}</div>
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-3xl font-extrabold text-primary">{riskScore}</div>
+        <div className="text-xs text-gray-500 mt-1 font-mono">
           {riskScore >= 70 ? 'Critical' : riskScore >= 50 ? 'High' : riskScore >= 30 ? 'Medium' : 'Low'}
         </div>
       </div>
 
       {/* Patient Info */}
-      <div className="dashboard-card flex flex-col justify-between border-primary">
+      <div className="dashboard-card flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Patient Age</span>
-          <Clock className="w-7 h-7 text-primary" />
+          <span className="text-xs text-gray-500 uppercase tracking-widest">Patient Age</span>
+          <Clock className="w-6 h-6 text-primary" />
         </div>
-        <div className="text-3xl font-bold text-primary">{data.age || '--'}</div>
+        <div className="text-3xl font-extrabold text-primary">{data.age || '--'}</div>
         <div className="text-xs text-gray-500 mt-1">years old</div>
       </div>
 
       {/* Medication Adherence */}
-      <div className="dashboard-card flex flex-col justify-between border-primary">
+      <div className="dashboard-card flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Adherence Rate</span>
-          <CheckCircle className="w-7 h-7 text-primary" />
+          <span className="text-xs text-gray-500 uppercase tracking-widest">Adherence</span>
+          <CheckCircle className="w-6 h-6 text-primary" />
         </div>
-        <div className="text-3xl font-bold text-primary">{Math.round(adherencePercent)}%</div>
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-3xl font-extrabold text-primary">{Math.round(adherencePercent)}%</div>
+        <div className="text-xs text-gray-500 mt-1 font-mono">
           {adherenceMetrics?.doses_taken || 0}/{adherenceMetrics?.total_doses || 0} doses
         </div>
       </div>
 
       {/* Last Check-in */}
-      <div className="dashboard-card flex flex-col justify-between border-primary">
+      <div className="dashboard-card flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Last Update</span>
-          <TrendingUp className="w-7 h-7 text-primary" />
+          <span className="text-xs text-gray-500 uppercase tracking-widest">Last Update</span>
+          <TrendingUp className="w-6 h-6 text-primary" />
         </div>
-        <div className="text-lg font-semibold text-primary">{timeAgo}</div>
-        <div className="text-xs text-gray-500 mt-1">{data.recent_records_count || 0} records</div>
+        <div className="text-lg font-bold text-primary">{timeAgo}</div>
+        <div className="text-xs text-gray-500 mt-1 font-mono">{data.recent_records_count || 0} records</div>
       </div>
     </div>
   );

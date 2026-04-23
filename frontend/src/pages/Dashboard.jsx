@@ -64,10 +64,10 @@ export const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-500 text-sm uppercase tracking-widest">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -75,23 +75,23 @@ export const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Header with AI toggle */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <h1 className="dashboard-header">CareSyncVision Dashboard</h1>
         <div className="flex items-center gap-3">
           {/* AI Service Toggle */}
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
-            <Cpu className={`w-4 h-4 ${aiEnabled ? 'text-green-600' : 'text-gray-400'}`} />
-            <span className="text-sm font-medium text-gray-700">AI Analysis</span>
+          <div className="flex items-center gap-2 bg-[#111] border border-[#2a2a2a] rounded-lg px-3 py-2">
+            <Cpu className={`w-4 h-4 ${aiEnabled ? 'text-primary' : 'text-gray-600'}`} />
+            <span className="text-sm font-medium text-gray-400">AI Analysis</span>
             <button
               onClick={() => setAiEnabled(!aiEnabled)}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                aiEnabled ? 'bg-green-500' : 'bg-gray-300'
+                aiEnabled ? 'bg-primary' : 'bg-[#333]'
               }`}
               title={aiEnabled ? 'Disable AI Analysis' : 'Enable AI Analysis'}
             >
               <span
-                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-black shadow transition-transform ${
                   aiEnabled ? 'translate-x-4' : 'translate-x-1'
                 }`}
               />
@@ -99,7 +99,7 @@ export const Dashboard = () => {
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-400 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Logout
@@ -109,7 +109,7 @@ export const Dashboard = () => {
 
       {/* AI status banner */}
       {aiEnabled && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-800">
+        <div className="mb-4 p-3 bg-primary/10 border border-primary/25 rounded-lg flex items-center gap-2 text-sm text-primary">
           <Cpu className="w-4 h-4 flex-shrink-0" />
           AI Analysis is <strong className="ml-1">enabled</strong>. The AI server will process your health data in real time.
         </div>

@@ -13,10 +13,10 @@ export const RiskScoreChart = ({ data = [] }) => {
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Risk Score Trend</h2>
-        <div className="h-80 flex items-center justify-center text-gray-500">
-          <p>No health data available yet. Submit vital signs to see trends.</p>
+      <div className="bg-[#111] rounded-lg border border-[#2a2a2a] p-6">
+        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Risk Score Trend</h2>
+        <div className="h-80 flex items-center justify-center text-gray-600">
+          <p className="text-sm">No health data available yet. Submit vital signs to see trends.</p>
         </div>
       </div>
     );
@@ -32,17 +32,27 @@ export const RiskScoreChart = ({ data = [] }) => {
     <div className="dashboard-card">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h2 className="text-lg font-semibold">Risk Score Trend (7 Days)</h2>
-          <p className="text-sm text-gray-600">Average: {avgRisk} | Min: {minRisk} | Max: {maxRisk}</p>
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Risk Score Trend (7 Days)</h2>
+          <p className="text-xs text-gray-600 mt-1 font-mono">Avg: {avgRisk} · Min: {minRisk} · Max: {maxRisk}</p>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-          <XAxis dataKey="timestamp" stroke="#9f1211" />
-          <YAxis stroke="#9f1211" />
-          <Tooltip contentStyle={{ background: '#fff', borderColor: '#9f1211', color: '#9f1211' }} />
-          <Line type="monotone" dataKey="risk_score" stroke="#9f1211" strokeWidth={3} dot={{ r: 4, fill: '#9f1211' }} />
+        <LineChart data={chartData} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#1e1e1e" />
+          <XAxis dataKey="timestamp" stroke="#444" tick={{ fill: '#666', fontSize: 11 }} />
+          <YAxis stroke="#444" tick={{ fill: '#666', fontSize: 11 }} />
+          <Tooltip
+            contentStyle={{ background: '#111', border: '1px solid #2a2a2a', color: '#76b900', borderRadius: '6px' }}
+            labelStyle={{ color: '#888' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="risk"
+            stroke="#76b900"
+            strokeWidth={2.5}
+            dot={{ r: 3, fill: '#76b900', strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: '#96d900', boxShadow: '0 0 8px rgba(118,185,0,0.5)' }}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

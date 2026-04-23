@@ -40,31 +40,33 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center p-4">
-      {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* NVIDIA-style green blobs */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full mix-blend-screen filter blur-3xl opacity-5 animate-blob"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-primary rounded-full mix-blend-screen filter blur-3xl opacity-5 animate-blob animation-delay-2000"></div>
+      {/* Scanline overlay */}
+      <div className="absolute inset-0 pointer-events-none" style={{background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)'}}></div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo & Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-3 rounded-full">
-              <Heart className="w-8 h-8 text-white" />
+            <div className="bg-primary/10 border border-primary/30 p-3 rounded-full glow-green-sm">
+              <Heart className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-primary tracking-tight">
             CareSyncVision
           </h1>
-          <p className="text-gray-600 mt-2 font-light">Intelligent Health Monitoring</p>
+          <p className="text-gray-500 mt-2 font-light text-sm uppercase tracking-widest">Intelligent Health Monitoring</p>
         </div>
 
         {/* Card */}
-        <div className="card backdrop-blur-md bg-white/95 border-gray-200">
+        <div className="card border-[#2a2a2a]">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                <p className="text-red-700 font-medium">{error}</p>
+              <div className="p-4 bg-red-950/40 border-l-4 border-red-500 rounded-lg">
+                <p className="text-red-400 font-medium text-sm">{error}</p>
               </div>
             )}
 
@@ -95,17 +97,17 @@ export const Login = () => {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="btn-primary w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="btn-primary w-full py-3 font-bold"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="flex items-center my-4">
-            <div className="flex-1 border-t border-gray-200" />
-            <span className="mx-3 text-sm text-gray-400">or</span>
-            <div className="flex-1 border-t border-gray-200" />
+          <div className="flex items-center my-5">
+            <div className="flex-1 border-t border-[#2a2a2a]" />
+            <span className="mx-3 text-xs text-gray-600 uppercase tracking-widest">or</span>
+            <div className="flex-1 border-t border-[#2a2a2a]" />
           </div>
 
           {/* Google Sign-In */}
@@ -120,19 +122,23 @@ export const Login = () => {
             />
           </div>
 
-          <div className="mt-4 text-center text-gray-600 text-sm">
-            <p>Don't have an account? <button onClick={() => navigate('/register')} className="text-primary-600 font-semibold hover:underline">Sign up</button></p>
+          <div className="mt-5 text-center text-gray-500 text-sm">
+            <p>Don't have an account?{' '}
+              <button onClick={() => navigate('/register')} className="text-primary font-semibold hover:text-primary-400 underline underline-offset-2">
+                Sign up
+              </button>
+            </p>
           </div>
         </div>
 
         {/* Demo Info */}
-        <div className="mt-6 card bg-gradient-to-r from-primary-50 to-primary-100 border-primary-200">
-          <p className="text-sm font-semibold text-primary-900 mb-3">Test with Demo Account:</p>
-          <div className="space-y-2 text-sm text-primary-800">
-            <p><span className="font-semibold">Email:</span> demo@example.com</p>
-            <p><span className="font-semibold">Password:</span> DemoPass123</p>
+        <div className="mt-5 card bg-primary/5 border-primary/20">
+          <p className="text-xs font-bold text-primary mb-3 uppercase tracking-widest">Demo Account</p>
+          <div className="space-y-1 text-sm text-gray-300 font-mono">
+            <p><span className="text-gray-500">Email:</span> demo@example.com</p>
+            <p><span className="text-gray-500">Password:</span> DemoPass123</p>
           </div>
-          <p className="text-xs text-primary-700 mt-3">Or create a new account to get started</p>
+          <p className="text-xs text-gray-600 mt-3">Or create a new account to get started</p>
         </div>
       </div>
     </div>

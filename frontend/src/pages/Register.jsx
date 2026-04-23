@@ -161,39 +161,40 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center p-4">
-      {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* NVIDIA-style green blobs */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full mix-blend-screen filter blur-3xl opacity-5 animate-blob"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-primary rounded-full mix-blend-screen filter blur-3xl opacity-5 animate-blob animation-delay-2000"></div>
+      <div className="absolute inset-0 pointer-events-none" style={{background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)'}}></div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo & Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-3 rounded-full">
-              <Heart className="w-8 h-8 text-white" />
+            <div className="bg-primary/10 border border-primary/30 p-3 rounded-full glow-green-sm">
+              <Heart className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-primary tracking-tight">
             CareSyncVision
           </h1>
-          <p className="text-gray-600 mt-2 font-light">Create Your Account</p>
+          <p className="text-gray-500 mt-2 font-light text-sm uppercase tracking-widest">Create Your Account</p>
         </div>
 
         {/* Card */}
-        <div className="card backdrop-blur-md bg-white/95 border-gray-200">
+        <div className="card">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700 text-sm">{error}</p>
+              <div className="p-4 bg-red-950/40 border-l-4 border-red-500 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-red-400 text-sm">{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-green-700 text-sm">{success}</p>
+              <div className="p-4 bg-green-950/40 border-l-4 border-green-500 rounded-lg flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-green-400 text-sm">{success}</p>
               </div>
             )}
 
@@ -244,7 +245,7 @@ export const Register = () => {
               <label className="label flex justify-between items-center">
                 <span>Password</span>
                 {passwordStrength && (
-                  <span className={`text-xs font-semibold ${getStrengthColor(passwordStrength)}`}>
+                  <span className={`text-xs font-bold ${getStrengthColor(passwordStrength)}`}>
                     {getStrengthText(passwordStrength)}
                   </span>
                 )}
@@ -258,7 +259,7 @@ export const Register = () => {
                 placeholder="••••••••"
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-600 mt-1">
                 Min. 8 characters with uppercase, lowercase, and numbers
               </p>
             </div>
@@ -280,17 +281,17 @@ export const Register = () => {
             <button
               type="submit"
               disabled={loading || !formData.email || !formData.password}
-              className="btn-primary w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="btn-primary w-full py-3 font-bold"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="flex items-center my-4">
-            <div className="flex-1 border-t border-gray-200" />
-            <span className="mx-3 text-sm text-gray-400">or</span>
-            <div className="flex-1 border-t border-gray-200" />
+          <div className="flex items-center my-5">
+            <div className="flex-1 border-t border-[#2a2a2a]" />
+            <span className="mx-3 text-xs text-gray-600 uppercase tracking-widest">or</span>
+            <div className="flex-1 border-t border-[#2a2a2a]" />
           </div>
 
           {/* Google Sign-Up */}
@@ -305,19 +306,23 @@ export const Register = () => {
             />
           </div>
 
-          <div className="mt-4 text-center text-gray-600 text-sm">
-            <p>Already have an account? <button onClick={() => navigate('/login')} className="text-primary-600 font-semibold hover:underline">Sign in</button></p>
+          <div className="mt-5 text-center text-gray-500 text-sm">
+            <p>Already have an account?{' '}
+              <button onClick={() => navigate('/login')} className="text-primary font-semibold hover:text-primary-400 underline underline-offset-2">
+                Sign in
+              </button>
+            </p>
           </div>
         </div>
 
         {/* Requirements */}
-        <div className="mt-6 card bg-blue-50 border-blue-200">
-          <p className="text-sm font-semibold text-blue-900 mb-3">Password Requirements:</p>
-          <ul className="space-y-2 text-xs text-blue-800">
-            <li className={formData.password.length >= 8 ? 'text-green-600' : ''}>✓ At least 8 characters</li>
-            <li className={/[A-Z]/.test(formData.password) ? 'text-green-600' : ''}>✓ One uppercase letter</li>
-            <li className={/[a-z]/.test(formData.password) ? 'text-green-600' : ''}>✓ One lowercase letter</li>
-            <li className={/\d/.test(formData.password) ? 'text-green-600' : ''}>✓ One number</li>
+        <div className="mt-5 card bg-primary/5 border-primary/20">
+          <p className="text-xs font-bold text-primary mb-3 uppercase tracking-widest">Password Requirements</p>
+          <ul className="space-y-1.5 text-xs text-gray-500 font-mono">
+            <li className={formData.password.length >= 8 ? 'text-primary' : ''}>✓ At least 8 characters</li>
+            <li className={/[A-Z]/.test(formData.password) ? 'text-primary' : ''}>✓ One uppercase letter</li>
+            <li className={/[a-z]/.test(formData.password) ? 'text-primary' : ''}>✓ One lowercase letter</li>
+            <li className={/\d/.test(formData.password) ? 'text-primary' : ''}>✓ One number</li>
           </ul>
         </div>
       </div>
