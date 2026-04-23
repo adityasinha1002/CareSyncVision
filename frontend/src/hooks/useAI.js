@@ -14,7 +14,7 @@ export function useAI() {
 
   const analyze = useCallback(async (data) => {
     if (!aiEnabled) {
-      setError('AI analysis is disabled. Enable it from the dashboard settings.');
+      setError('AI analysis is disabled. Enable it from the dashboard.');
       return null;
     }
     if (!AI_SERVER_URL) {
@@ -38,7 +38,7 @@ export function useAI() {
 
   const predict = useCallback(async (data) => {
     if (!aiEnabled) {
-      setError('AI analysis is disabled. Enable it from the dashboard settings.');
+      setError('AI analysis is disabled. Enable it from the dashboard.');
       return null;
     }
     if (!AI_SERVER_URL) {

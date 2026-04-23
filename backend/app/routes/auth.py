@@ -388,13 +388,13 @@ def google_login():
             try:
                 session.add(patient)
                 session.commit()
-                logger.info(f"New patient registered via Google OAuth: {google_email} (ID: {patient.patient_id})")
+                logger.info("New patient registered via Google OAuth (ID: %s)", patient.patient_id)
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error saving Google OAuth patient: {str(e)}", exc_info=True)
+                logger.error("Error saving Google OAuth patient: %s", str(e), exc_info=True)
                 return jsonify({"error": "Failed to create account"}), 500
         else:
-            logger.info(f"Existing patient logged in via Google OAuth: {google_email} (ID: {patient.patient_id})")
+            logger.info("Existing patient logged in via Google OAuth (ID: %s)", patient.patient_id)
 
         token = AuthService.generate_token(patient.patient_id)
         if not token:
@@ -411,5 +411,5 @@ def google_login():
         }), 200
 
     except Exception as e:
-        logger.error(f"Error during Google login: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        logger.error("Error during Google login: %s", str(e), exc_info=True)
+        return jsonify({"error": "Server error"}), 500

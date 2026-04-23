@@ -101,6 +101,10 @@ export const Register = () => {
     }
   };
 
+  const handleGoogleError = () => {
+    setError('Google sign-up failed. Please try again.');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -293,7 +297,7 @@ export const Register = () => {
           <div className="flex justify-center">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => {}}
+              onError={handleGoogleError}
               useOneTap={false}
               width="360"
               text="signup_with"

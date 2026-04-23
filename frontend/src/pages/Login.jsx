@@ -35,6 +35,10 @@ export const Login = () => {
     }
   };
 
+  const handleGoogleError = () => {
+    useAuthStore.getState().setError('Google sign-in failed. Please try again.');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center p-4">
       {/* Decorative elements */}
@@ -108,7 +112,7 @@ export const Login = () => {
           <div className="flex justify-center">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => {}}
+              onError={handleGoogleError}
               useOneTap={false}
               width="360"
               text="signin_with"
