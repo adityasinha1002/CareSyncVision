@@ -49,6 +49,32 @@ export const useAuthStore = create((set) => ({
       return { success: false, error: errorMsg };
     }
   },
+
+  googleLogin: async (credential) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await authService.googleLogin(credential);
+      const { token, patient_id, email, name } = response.data;
+
+      authService.setToken(token);
+      localStorage.setItem('patientId', patient_id);
+      localStorage.setItem('email', email);
+      localStorage.setItem('name', name);
+
+      set({
+        token,
+        user: { patient_id, email, name },
+        isAuthenticated: true,
+        loading: false,
+      });
+
+      return { success: true };
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Google login failed';
+      set({ error: errorMsg, loading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
   
   logout: () => {
     authService.clearToken();
@@ -91,4 +117,16 @@ export const useAlertStore = create((set) => ({
       a.alert_id === alertId ? { ...a, read: true } : a
     ),
   })),
+}));
+
+// AI feature toggle – persisted to localStorage so the preference survives page reload
+const storedAiEnabled = localStorage.getItem('aiEnabled') === 'true';
+
+export const useAIStore = create((set) => ({
+  aiEnabled: storedAiEnabled,
+
+  setAiEnabled: (enabled) => {
+    localStorage.setItem('aiEnabled', String(enabled));
+    set({ aiEnabled: enabled });
+  },
 }));

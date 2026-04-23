@@ -3,7 +3,7 @@ Authentication Routes
 Login, token generation, and access control
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import logging
 import re
@@ -326,3 +326,90 @@ def logout():
     except Exception as e:
         logger.error(f"Error during logout: {str(e)}", exc_info=True)
         return jsonify({"error": "Server error"}), 500
+
+
+@auth_bp.route('/auth/google', methods=['POST'])
+def google_login():
+    """
+    Authenticate with Google OAuth ID token.
+
+    JSON payload:
+    {
+        "credential": "<Google ID token>"
+    }
+    """
+    try:
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as grequests
+
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+
+        credential = data.get('credential', '').strip()
+        if not credential:
+            return jsonify({"error": "Google credential (ID token) is required"}), 400
+
+        google_client_id = current_app.config.get('GOOGLE_CLIENT_ID', '')
+        if not google_client_id:
+            logger.error("GOOGLE_CLIENT_ID is not configured on the server")
+            return jsonify({"error": "Google OAuth is not configured on the server"}), 500
+
+        # Verify the Google ID token
+        try:
+            id_info = id_token.verify_oauth2_token(
+                credential,
+                grequests.Request(),
+                google_client_id
+            )
+        except ValueError as e:
+            logger.warning(f"Invalid Google token: {str(e)}")
+            return jsonify({"error": "Invalid Google token"}), 401
+
+        google_email = id_info.get('email', '').strip().lower()
+        google_name = id_info.get('name', '') or id_info.get('email', '').split('@')[0]
+
+        if not google_email:
+            return jsonify({"error": "Could not retrieve email from Google token"}), 400
+
+        # Find or create the patient
+        session = get_db_session()
+        result = session.execute(select(Patient).where(Patient.email == google_email))
+        patient = result.scalar_one_or_none()
+
+        if not patient:
+            # Create new patient from Google profile
+            patient = Patient(
+                email=google_email,
+                name=google_name,
+                active=True,
+            )
+            # No password hash – OAuth-only account; set_password is not called
+            try:
+                session.add(patient)
+                session.commit()
+                logger.info(f"New patient registered via Google OAuth: {google_email} (ID: {patient.patient_id})")
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Error saving Google OAuth patient: {str(e)}", exc_info=True)
+                return jsonify({"error": "Failed to create account"}), 500
+        else:
+            logger.info(f"Existing patient logged in via Google OAuth: {google_email} (ID: {patient.patient_id})")
+
+        token = AuthService.generate_token(patient.patient_id)
+        if not token:
+            return jsonify({"error": "Failed to generate token"}), 500
+
+        return jsonify({
+            'success': True,
+            'message': 'Google login successful',
+            'token': token,
+            'patient_id': patient.patient_id,
+            'email': patient.email,
+            'name': patient.name,
+            'expires_in': 86400,
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error during Google login: {str(e)}", exc_info=True)
+        return jsonify({"error": "Server error", "message": str(e)}), 500

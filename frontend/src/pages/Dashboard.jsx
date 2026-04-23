@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useAuthStore } from '../hooks/useStore';
+import { useAuthStore, useAIStore } from '../hooks/useStore';
 import { patientService, medicationService } from '../services/api';
 import { HealthSummary } from '../components/HealthSummary';
 import { RiskScoreChart } from '../components/RiskScoreChart';
 import MedicationTracker from '../components/MedicationTracker';
 import { AlertPanel } from '../components/AlertPanel';
 import { ESPDeviceDemo } from '../components/ESPDeviceDemo';
-import { LogOut, Plus } from 'lucide-react';
+import { LogOut, Plus, Cpu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
   const { user, logout } = useAuthStore();
+  const { aiEnabled, setAiEnabled } = useAIStore();
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState(null);
   const [healthHistory, setHealthHistory] = useState([]);
@@ -72,15 +73,48 @@ export const Dashboard = () => {
     );
   }
 
-
-
-
-
-
-
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-header">CareSyncVision Dashboard</h1>
+      {/* Header with AI toggle */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="dashboard-header">CareSyncVision Dashboard</h1>
+        <div className="flex items-center gap-3">
+          {/* AI Service Toggle */}
+          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
+            <Cpu className={`w-4 h-4 ${aiEnabled ? 'text-green-600' : 'text-gray-400'}`} />
+            <span className="text-sm font-medium text-gray-700">AI Analysis</span>
+            <button
+              onClick={() => setAiEnabled(!aiEnabled)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                aiEnabled ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+              title={aiEnabled ? 'Disable AI Analysis' : 'Enable AI Analysis'}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                  aiEnabled ? 'translate-x-4' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* AI status banner */}
+      {aiEnabled && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-800">
+          <Cpu className="w-4 h-4 flex-shrink-0" />
+          AI Analysis is <strong className="ml-1">enabled</strong>. The AI server will process your health data in real time.
+        </div>
+      )}
+
       <div className="dashboard-card">
         {/* ...existing dashboard content... */}
       </div>

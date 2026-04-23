@@ -49,6 +49,9 @@ export const authService = {
 
   login: (email, password) =>
     api.post('/auth/login', { email, password }),
+
+  googleLogin: (credential) =>
+    api.post('/auth/google', { credential }),
   
   verify: () =>
     api.get('/auth/verify'),

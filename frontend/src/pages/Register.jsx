@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../hooks/useStore';
+import { GoogleLogin } from '@react-oauth/google';
 import { Heart, AlertCircle, CheckCircle } from 'lucide-react';
 import { authService } from '../services/api';
 
@@ -17,7 +18,7 @@ export const Register = () => {
   const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, googleLogin } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -86,6 +87,18 @@ export const Register = () => {
     }
 
     return true;
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+    const result = await googleLogin(credentialResponse.credential);
+    setLoading(false);
+    if (result.success) {
+      navigate('/dashboard');
+    } else {
+      setError(result.error || 'Google sign-in failed');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -268,6 +281,25 @@ export const Register = () => {
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-4">
+            <div className="flex-1 border-t border-gray-200" />
+            <span className="mx-3 text-sm text-gray-400">or</span>
+            <div className="flex-1 border-t border-gray-200" />
+          </div>
+
+          {/* Google Sign-Up */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => {}}
+              useOneTap={false}
+              width="360"
+              text="signup_with"
+              shape="rectangular"
+            />
+          </div>
 
           <div className="mt-4 text-center text-gray-600 text-sm">
             <p>Already have an account? <button onClick={() => navigate('/login')} className="text-primary-600 font-semibold hover:underline">Sign in</button></p>

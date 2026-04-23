@@ -39,6 +39,9 @@ class Config:
     MAX_CONTENT_LENGTH = int(os.getenv('MAX_IMAGE_SIZE', 5242880))  # 5MB
     ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
     
+    # Google OAuth
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+
     # Session settings
     SESSION_TIMEOUT = int(os.getenv('SESSION_TIMEOUT', 3600))  # 1 hour
     MAX_SESSIONS_PER_PATIENT = int(os.getenv('MAX_SESSIONS_PER_PATIENT', 3))

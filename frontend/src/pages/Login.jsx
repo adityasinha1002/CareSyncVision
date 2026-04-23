@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../hooks/useStore';
+import { GoogleLogin } from '@react-oauth/google';
 import { Heart } from 'lucide-react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { login, loading, error, isAuthenticated } = useAuthStore();
+  const { login, googleLogin, loading, error, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,6 +23,13 @@ export const Login = () => {
     }
 
     const result = await login(email, password);
+    if (result.success) {
+      navigate('/dashboard');
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const result = await googleLogin(credentialResponse.credential);
     if (result.success) {
       navigate('/dashboard');
     }
@@ -88,6 +96,25 @@ export const Login = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-4">
+            <div className="flex-1 border-t border-gray-200" />
+            <span className="mx-3 text-sm text-gray-400">or</span>
+            <div className="flex-1 border-t border-gray-200" />
+          </div>
+
+          {/* Google Sign-In */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => {}}
+              useOneTap={false}
+              width="360"
+              text="signin_with"
+              shape="rectangular"
+            />
+          </div>
 
           <div className="mt-4 text-center text-gray-600 text-sm">
             <p>Don't have an account? <button onClick={() => navigate('/register')} className="text-primary-600 font-semibold hover:underline">Sign up</button></p>
