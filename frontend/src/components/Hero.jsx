@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Hero() {
   return (
@@ -10,7 +10,7 @@ export default function Hero() {
 
       <div className="relative z-10 max-w-2xl">
         <div className="flex items-center gap-3 mb-4">
-          <Heart className="w-8 h-8" />
+          <img src="/logo.svg" alt="CareSyncVision logo" className="w-8 h-8" style={{ filter: 'brightness(0) invert(1)' }} />
           <span className="text-primary-100 font-semibold">AI-Powered Health Monitoring</span>
         </div>
         

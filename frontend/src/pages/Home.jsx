@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Activity, TrendingUp, Shield } from 'lucide-react';
+import { Activity, TrendingUp, Shield } from 'lucide-react';
 import Hero from '../components/Hero';
 import CommandInput from '../components/CommandInput';
 import FilePreview from '../components/FilePreview';
@@ -32,7 +32,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-2 rounded-lg">
-                <Heart className="w-6 h-6 text-white" />
+                <img src="/logo.svg" alt="CareSyncVision logo" className="w-6 h-6" style={{ filter: 'brightness(0) invert(1)' }} />
               </div>
               <h1 className="text-2xl font-bold text-gray-900">CareSyncVision</h1>
             </div>

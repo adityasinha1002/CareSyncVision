@@ -1,27 +1,58 @@
 /* App.css - Tailwind CSS is handling most styles */
-/* Keep this file minimal - use Tailwind for styling */
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-blob {
+  .animate-blob,
+  .animate-fade-in,
+  .animate-slide-up {
     animation: none;
   }
 }
+
 body {
-  @apply bg-white text-gray-900 font-sans;
+  background-color: #ffffff;
+  color: #111827;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 .dashboard-container {
-  @apply bg-white min-h-screen flex flex-col items-center px-4 py-8;
+  background-color: #f8f8f8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
 }
 
 .dashboard-card {
-  @apply bg-white border border-gray-200 rounded-xl shadow-lg p-6 mb-6 w-full max-w-3xl;
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-top: 3px solid #9f1211;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 48rem;
 }
 
 .dashboard-header {
-  @apply text-3xl font-bold mb-8 text-center text-primary;
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #9f1211;
+  letter-spacing: -0.025em;
 }
 
 .dashboard-btn {
-  @apply bg-primary text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-red-800 transition;
+  background-color: #9f1211;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 8px rgba(159,18,17,0.25);
+  transition: background-color 150ms ease;
+}
+.dashboard-btn:hover {
+  background-color: #861010;
 }

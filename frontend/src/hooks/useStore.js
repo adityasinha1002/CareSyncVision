@@ -5,22 +5,58 @@ export const useAuthStore = create((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isDemoMode: false,
   loading: false,
   error: null,
-  
+  aiEnabled: false,
+
   // Initialize auth state from localStorage
   initialize: () => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    const aiEnabled = localStorage.getItem('aiEnabled') === 'true';
+    if (isDemoMode) {
+      set({
+        isDemoMode: true,
+        aiEnabled,
+        user: { patient_id: 'demo-patient', email: 'demo@example.com', name: 'Demo User' },
+        isAuthenticated: true,
+      });
+      return;
+    }
     const token = localStorage.getItem('jwtToken');
     const patientId = localStorage.getItem('patientId');
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
     if (token && patientId) {
-      set({ 
-        token, 
-        user: { patient_id: patientId, email, name }, 
-        isAuthenticated: true 
+      set({
+        token,
+        user: { patient_id: patientId, email, name },
+        isAuthenticated: true,
+        aiEnabled,
       });
     }
+  },
+
+  // Toggle AI analysis features on / off
+  setAiEnabled: (enabled) => {
+    localStorage.setItem('aiEnabled', enabled ? 'true' : 'false');
+    set({ aiEnabled: enabled });
+  },
+
+  // Demo login — no API call required, always succeeds
+  demoLogin: () => {
+    localStorage.setItem('isDemoMode', 'true');
+    localStorage.setItem('patientId', 'demo-patient');
+    localStorage.setItem('email', 'demo@example.com');
+    localStorage.setItem('name', 'Demo User');
+    set({
+      isDemoMode: true,
+      user: { patient_id: 'demo-patient', email: 'demo@example.com', name: 'Demo User' },
+      isAuthenticated: true,
+      loading: false,
+      error: null,
+    });
+    return { success: true };
   },
   
   login: async (email, password) => {
@@ -29,7 +65,6 @@ export const useAuthStore = create((set) => ({
       const response = await authService.login(email, password);
       const { token, patient_id, name } = response.data;
       
-      // Store token and user info
       authService.setToken(token);
       localStorage.setItem('patientId', patient_id);
       localStorage.setItem('email', email);
@@ -49,13 +84,42 @@ export const useAuthStore = create((set) => ({
       return { success: false, error: errorMsg };
     }
   },
+
+  googleLogin: async (credential) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await authService.googleAuth(credential);
+      const { token, patient_id, name, email } = response.data;
+
+      authService.setToken(token);
+      localStorage.setItem('patientId', patient_id);
+      localStorage.setItem('email', email || '');
+      localStorage.setItem('name', name || '');
+
+      set({
+        token,
+        user: { patient_id, email, name },
+        isAuthenticated: true,
+        loading: false,
+      });
+
+      return { success: true };
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Google login failed';
+      set({ error: errorMsg, loading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
   
   logout: () => {
     authService.clearToken();
+    localStorage.removeItem('jwtToken');
     localStorage.removeItem('patientId');
     localStorage.removeItem('email');
     localStorage.removeItem('name');
-    set({ user: null, token: null, isAuthenticated: false, error: null });
+    localStorage.removeItem('isDemoMode');
+    localStorage.removeItem('aiEnabled');
+    set({ user: null, token: null, isAuthenticated: false, isDemoMode: false, aiEnabled: false, error: null });
   },
   
   setUser: (user) => set({ user }),
