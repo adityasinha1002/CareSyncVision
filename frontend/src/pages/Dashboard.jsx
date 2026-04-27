@@ -41,7 +41,7 @@ export const Dashboard = () => {
         setAdherenceMetrics(adherenceRes.data.metrics || {});
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
-        setError('Failed to load some dashboard data. Showing available information.');
+        setError('Failed to load some dashboard data. Please refresh the page or try again later.');
       } finally {
         setLoading(false);
       }
