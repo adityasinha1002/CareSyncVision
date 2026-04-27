@@ -1,40 +1,49 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Home, Heart, Pill } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Activity, Heart } from 'lucide-react';
 
-const iconMap = {
-  Dashboard: Home,
-  'Health Analysis': Heart,
-  Medications: Pill,
-};
+const navLinks = [
+  { label: 'Dashboard',    href: '/dashboard',     icon: <Home     className="w-5 h-5" /> },
+  { label: 'Health Input', href: '/health-input',  icon: <Activity className="w-5 h-5" /> },
+];
 
-export default function Sidebar({ items }) {
+export default function Sidebar() {
+  const location = useLocation();
+
   return (
-    <aside className="hidden md:block w-64 bg-white border-r border-gray-200 shadow-soft">
-      <nav className="p-6 space-y-2">
-        {items?.map((item, index) => {
-          const Icon = iconMap[item.label] || Home;
+    <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen shadow-sm flex-shrink-0">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+        <div className="bg-primary p-2 rounded-lg">
+          <Heart className="w-5 h-5 text-white" />
+        </div>
+        <span className="text-lg font-bold text-gray-900 tracking-tight">CareSyncVision</span>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 p-4 space-y-1">
+        {navLinks.map((link) => {
+          const active = location.pathname === link.href;
           return (
-            return (
-              <aside className="bg-white shadow h-full w-64 flex flex-col p-6 border-r border-primary">
-                <div className="flex items-center gap-2 mb-8">
-                  <img src="/logo192.png" alt="CareSyncVision" className="w-8 h-8" />
-                  <span className="text-xl font-bold text-primary">CareSyncVision</span>
-                </div>
-                <nav className="flex-1">
-                  <ul className="space-y-4">
-                    {links.map((link) => (
-                      <li key={link.label}>
-                        <a
-                          href={link.href}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 text-primary font-semibold transition"
-                        >
-                          {link.icon}
-                          {link.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </aside>
-            );
+            <Link
+              key={link.label}
+              to={link.href}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                active
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-primary-50 hover:text-primary'
+              }`}
+            >
+              {link.icon}
+              {link.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Footer branding */}
+      <div className="px-6 py-4 border-t border-gray-100">
+        <p className="text-xs text-gray-400">CareSyncVision v1.0</p>
+      </div>
+    </aside>
+  );
+}

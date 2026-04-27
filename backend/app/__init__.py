@@ -82,7 +82,9 @@ def create_app(config=None):
         logger.warning(f"Could not create upload folder: {e}")
     
     # Enable CORS with environment-based origins.
-    # Keep localhost for development and always allow the Netlify production frontend.
+    # Keep localhost for development and always allow the known production frontends.
+    # For Railway deployments add the Railway frontend URL via the CORS_ORIGINS env var,
+    # e.g. CORS_ORIGINS=https://caresynvision-frontend.up.railway.app
     cors_origins = [
         'http://localhost:3000',
         'http://localhost:5000',
