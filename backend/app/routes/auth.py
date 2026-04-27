@@ -108,7 +108,7 @@ def register():
             session = get_db_session()
             session.add(patient)
             session.commit()
-            logger.info(f"New patient registered: {email} (ID: {patient.patient_id})")
+            logger.info(f"New patient registered: ID {patient.patient_id}")
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error saving patient to database: {str(e)}", exc_info=True)
@@ -170,11 +170,11 @@ def login():
             result = get_db_session().execute(select(Patient).where(Patient.email == email))
             patient = result.scalar_one_or_none()
             if not patient:
-                logger.warning(f"Login failed: Patient with email {email} not found")
+                logger.warning("Login failed: no account found for provided email")
                 return jsonify({"error": "Invalid email or password"}), 401
             
             if not patient.check_password(password):
-                logger.warning(f"Login failed: Invalid password for email {email}")
+                logger.warning(f"Login failed: Invalid password for patient {patient.patient_id}")
                 return jsonify({"error": "Invalid email or password"}), 401
         
         # Legacy patient_id login (for backward compatibility)
@@ -200,7 +200,7 @@ def login():
         if not token:
             return jsonify({"error": "Failed to generate token"}), 500
         
-        logger.info(f"Patient {patient.patient_id} ({patient.email}) logged in successfully")
+        logger.info(f"Patient {patient.patient_id} logged in successfully")
         
         return jsonify({
             'success': True,
