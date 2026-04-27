@@ -8,6 +8,7 @@ from datetime import datetime
 import logging
 import os
 import re
+import jwt as _jwt
 from sqlalchemy import select
 from app.services.auth_service import AuthService
 from app.models.patient_model import Patient
@@ -108,7 +109,7 @@ def register():
             session = get_db_session()
             session.add(patient)
             session.commit()
-            logger.info(f"New patient registered: ID {patient.patient_id}")
+            logger.info("New patient registered successfully")
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error saving patient to database: {str(e)}", exc_info=True)
@@ -174,7 +175,7 @@ def login():
                 return jsonify({"error": "Invalid email or password"}), 401
             
             if not patient.check_password(password):
-                logger.warning(f"Login failed: Invalid password for patient {patient.patient_id}")
+                logger.warning("Login failed: invalid password for email-based login")
                 return jsonify({"error": "Invalid email or password"}), 401
         
         # Legacy patient_id login (for backward compatibility)
@@ -182,17 +183,17 @@ def login():
             result = get_db_session().execute(select(Patient).where(Patient.patient_id == patient_id))
             patient = result.scalar_one_or_none()
             if not patient:
-                logger.warning(f"Login failed: Patient {patient_id} not found")
+                logger.warning("Login failed: patient_id not found")
                 return jsonify({"error": "Invalid credentials"}), 401
             
             # Legacy: if patient has a password hash, verify it
             if patient.password_hash:
                 if not patient.check_password(legacy_password):
-                    logger.warning(f"Login failed: Invalid password for patient {patient_id}")
+                    logger.warning("Login failed: invalid password for legacy patient_id login")
                     return jsonify({"error": "Invalid credentials"}), 401
             else:
                 # Patient has no password set – cannot authenticate via legacy path
-                logger.warning(f"Login failed: Patient {patient_id} has no password set")
+                logger.warning("Login failed: patient has no password set")
                 return jsonify({"error": "Invalid credentials"}), 401
         
         # Generate JWT token
@@ -200,7 +201,7 @@ def login():
         if not token:
             return jsonify({"error": "Failed to generate token"}), 500
         
-        logger.info(f"Patient {patient.patient_id} logged in successfully")
+        logger.info("Patient logged in successfully")
         
         return jsonify({
             'success': True,
@@ -281,7 +282,6 @@ def refresh_token():
         # Verify token signature but allow expired tokens (that is the point of refresh).
         # We must verify the signature to prevent forged tokens from obtaining new ones.
         try:
-            import jwt as _jwt
             secret = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
             payload = _jwt.decode(
                 token,
