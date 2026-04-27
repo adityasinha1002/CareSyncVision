@@ -8,7 +8,7 @@ from datetime import datetime
 import logging
 import os
 import re
-import jwt as _jwt
+import jwt
 from sqlalchemy import select
 from app.services.auth_service import AuthService
 from app.models.patient_model import Patient
@@ -132,7 +132,7 @@ def register():
     
     except Exception as e:
         logger.error(f"Error during registration: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error"}), 500
+        return jsonify({"error": "Registration failed. Please try again."}), 500
 
 
 @auth_bp.route('/auth/login', methods=['POST'])
@@ -283,7 +283,7 @@ def refresh_token():
         # We must verify the signature to prevent forged tokens from obtaining new ones.
         try:
             secret = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
-            payload = _jwt.decode(
+            payload = jwt.decode(
                 token,
                 secret,
                 algorithms=['HS256'],
