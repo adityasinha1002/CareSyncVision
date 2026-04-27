@@ -13,10 +13,14 @@ import os
 
 logger = logging.getLogger(__name__)
 
-# Secret key for JWT signing
-JWT_SECRET = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
+# Algorithm used for JWT signing
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
+
+
+def _jwt_secret() -> str:
+    """Return the JWT secret key, always read from the environment at call time."""
+    return os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
 
 
 class AuthService:
@@ -43,7 +47,7 @@ class AuthService:
                 'exp': datetime.utcnow() + timedelta(hours=expires_in)
             }
             
-            token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+            token = jwt.encode(payload, _jwt_secret(), algorithm=JWT_ALGORITHM)
             logger.info(f"Generated token for patient {patient_id}")
             
             return token
@@ -64,7 +68,7 @@ class AuthService:
             dict: Token payload or None if invalid
         """
         try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(token, _jwt_secret(), algorithms=[JWT_ALGORITHM])
             logger.debug(f"Token verified for patient {payload.get('patient_id')}")
             return payload
         

@@ -6,6 +6,7 @@ Login, token generation, and access control
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
+import os
 import re
 from sqlalchemy import select
 from app.services.auth_service import AuthService
@@ -130,7 +131,7 @@ def register():
     
     except Exception as e:
         logger.error(f"Error during registration: {str(e)}", exc_info=True)
-        return jsonify({"error": "Server error", "message": str(e)}), 500
+        return jsonify({"error": "Server error"}), 500
 
 
 @auth_bp.route('/auth/login', methods=['POST'])
@@ -184,16 +185,15 @@ def login():
                 logger.warning(f"Login failed: Patient {patient_id} not found")
                 return jsonify({"error": "Invalid credentials"}), 401
             
-            # Legacy: if patient has a password hash, verify it; otherwise use hardcoded check
+            # Legacy: if patient has a password hash, verify it
             if patient.password_hash:
                 if not patient.check_password(legacy_password):
                     logger.warning(f"Login failed: Invalid password for patient {patient_id}")
                     return jsonify({"error": "Invalid credentials"}), 401
             else:
-                # Fallback for existing patients without password_hash
-                if legacy_password != "password":
-                    logger.warning(f"Login failed: Invalid password for patient {patient_id}")
-                    return jsonify({"error": "Invalid credentials"}), 401
+                # Patient has no password set – cannot authenticate via legacy path
+                logger.warning(f"Login failed: Patient {patient_id} has no password set")
+                return jsonify({"error": "Invalid credentials"}), 401
         
         # Generate JWT token
         token = AuthService.generate_token(patient.patient_id)
@@ -278,11 +278,18 @@ def refresh_token():
         if not token:
             return jsonify({'error': 'Token is missing'}), 401
         
-        # Verify token (even if expired, decode it)
+        # Verify token signature but allow expired tokens (that is the point of refresh).
+        # We must verify the signature to prevent forged tokens from obtaining new ones.
         try:
-            import jwt
-            payload = jwt.decode(token, '', algorithms=['HS256'], options={"verify_signature": False})
-        except:
+            import jwt as _jwt
+            secret = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
+            payload = _jwt.decode(
+                token,
+                secret,
+                algorithms=['HS256'],
+                options={"verify_exp": False},
+            )
+        except Exception:
             return jsonify({'error': 'Invalid token'}), 401
         
         patient_id = payload.get('patient_id')

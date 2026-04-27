@@ -83,12 +83,12 @@ def create_app(config=None):
     
     # Enable CORS with environment-based origins.
     # Keep localhost for development and always allow the known production frontends.
-    # For Railway deployments add the Railway frontend URL via the CORS_ORIGINS env var,
-    # e.g. CORS_ORIGINS=https://caresynvision-frontend.up.railway.app
+    # Additional origins can be added via the CORS_ORIGINS env var (comma-separated).
     cors_origins = [
         'http://localhost:3000',
         'http://localhost:5000',
-        'https://caresyncvision.vercel.app',  # Vercel production frontend
+        'https://caresyncvision.vercel.app',                    # Vercel production frontend
+        'https://caresyncvision-frontend.up.railway.app',       # Railway production frontend
     ]
     env_cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
     cors_origins.extend(env_cors_origins)
