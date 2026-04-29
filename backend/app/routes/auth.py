@@ -3,13 +3,15 @@ Authentication Routes
 Login, token generation, and access control
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session, redirect
 from datetime import datetime
 import logging
 import re
+import os
+import requests
 from sqlalchemy import select
-from app.services.auth_service import AuthService
-from app.models.patient_model import Patient
+from backend.app.services.auth_service import AuthService
+from backend.app.models.patient_model import Patient
 from .. import db
 
 logger = logging.getLogger(__name__)
@@ -104,14 +106,19 @@ def register():
         
         # Save to database
         try:
-            session = get_db_session()
-            session.add(patient)
-            session.commit()
+            session_obj = get_db_session()
+            session_obj.add(patient)
+            session_obj.commit()
             logger.info(f"New patient registered: {email} (ID: {patient.patient_id})")
         except Exception as e:
             get_db_session().rollback()
             logger.error(f"Error saving patient to database: {str(e)}", exc_info=True)
             return jsonify({"error": "Failed to create account"}), 500
+        
+        # CRITICAL: Ensure patient has required attributes
+        if not patient or not hasattr(patient, 'patient_id') or not patient.patient_id:
+            logger.error(f"Patient object invalid after creation: {patient}")
+            return jsonify({"error": "Failed to create account - invalid patient"}), 500
         
         # Generate JWT token for auto-login
         token = AuthService.generate_token(patient.patient_id)
@@ -194,6 +201,11 @@ def login():
                 if legacy_password != "password":
                     logger.warning(f"Login failed: Invalid password for patient {patient_id}")
                     return jsonify({"error": "Invalid credentials"}), 401
+        
+        # CRITICAL: Ensure patient exists before accessing attributes
+        if patient is None:
+            logger.error("Patient is None after authentication logic - should not reach here")
+            return jsonify({"error": "Authentication failed"}), 401
         
         # Generate JWT token
         token = AuthService.generate_token(patient.patient_id)
@@ -326,3 +338,203 @@ def logout():
     except Exception as e:
         logger.error(f"Error during logout: {str(e)}", exc_info=True)
         return jsonify({"error": "Server error"}), 500
+
+
+@auth_bp.route('/auth/oauth/start', methods=['POST'])
+def oauth_start():
+    """
+    Start Google OAuth flow by returning authorization URL
+    
+    Returns:
+    {
+        "authorization_url": "https://accounts.google.com/o/oauth2/v2/auth?...",
+        "state": "random_state_token"
+    }
+    """
+    try:
+        # Get OAuth credentials from environment
+        client_id = os.getenv('GOOGLE_CLIENT_ID')
+        client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+        
+        if not all([client_id, client_secret, redirect_uri]):
+            logger.error("Missing Google OAuth credentials in environment")
+            return jsonify({"error": "OAuth not configured"}), 500
+        
+        # Generate authorization URL
+        import secrets
+        state = secrets.token_urlsafe(32)
+        
+        # Build the authorization URL manually
+        authorization_url = (
+            f"https://accounts.google.com/o/oauth2/v2/auth?"
+            f"client_id={client_id}&"
+            f"redirect_uri={redirect_uri}&"
+            f"response_type=code&"
+            f"scope=openid%20email%20profile&"
+            f"state={state}&"
+            f"access_type=offline&"
+            f"include_granted_scopes=true"
+        )
+        
+        # Store state in session for verification
+        session['oauth_state'] = state
+        session.permanent = True
+        
+        logger.info(f"OAuth flow started with state: {state}")
+        
+        return jsonify({
+            'success': True,
+            'authorization_url': authorization_url,
+            'state': state
+        }), 200
+    
+    except Exception as e:
+        logger.error(f"Error starting OAuth flow: {str(e)}", exc_info=True)
+        return jsonify({"error": "Failed to start OAuth flow"}), 500
+
+
+@auth_bp.route('/auth/oauth/callback', methods=['GET'])
+def oauth_callback():
+    """
+    Handle Google OAuth callback (server-side)
+    Google redirects here with authorization code
+    
+    Query parameters:
+    - code: Authorization code from Google
+    - state: State token for CSRF protection
+    - error: Error code if authentication failed
+    """
+    try:
+        # Check for OAuth errors
+        error = request.args.get('error')
+        if error:
+            error_description = request.args.get('error_description', error)
+            logger.warning(f"OAuth error from Google: {error_description}")
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            return redirect(f"{frontend_url}/login?oauth_error={error_description}")
+        
+        # Extract authorization code
+        code = request.args.get('code')
+        if not code:
+            logger.error("No authorization code received from Google")
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            return redirect(f"{frontend_url}/login?oauth_error=No authorization code received")
+        
+        # Get OAuth credentials from environment
+        client_id = os.getenv('GOOGLE_CLIENT_ID')
+        client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        
+        if not all([client_id, client_secret, redirect_uri, frontend_url]):
+            logger.error("Missing OAuth configuration in environment")
+            return redirect(f"{frontend_url}/login?oauth_error=Server configuration error")
+        
+        # Exchange authorization code for access token
+        logger.info("Exchanging authorization code for token")
+        
+        token_response = requests.post(
+            'https://oauth2.googleapis.com/token',
+            data={
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'code': code,
+                'grant_type': 'authorization_code',
+                'redirect_uri': redirect_uri
+            },
+            timeout=10
+        )
+        
+        if token_response.status_code != 200:
+            logger.error(f"Token exchange failed: {token_response.text}")
+            return redirect(f"{frontend_url}/login?oauth_error=Failed to exchange authorization code")
+        
+        token_data = token_response.json()
+        access_token = token_data.get('access_token')
+        
+        if not access_token:
+            logger.error("No access token in response")
+            return redirect(f"{frontend_url}/login?oauth_error=Failed to obtain access token")
+        
+        # Get user info from Google
+        logger.info("Fetching user info from Google")
+        user_response = requests.get(
+            'https://www.googleapis.com/oauth2/v2/userinfo',
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10
+        )
+        
+        if user_response.status_code != 200:
+            logger.error(f"User info fetch failed: {user_response.text}")
+            return redirect(f"{frontend_url}/login?oauth_error=Failed to fetch user information")
+        
+        user_info = user_response.json()
+        
+        # Extract user information
+        email = user_info.get('email')
+        name = user_info.get('name', 'Google User')
+        
+        if not email:
+            logger.error("No email in Google user info")
+            return redirect(f"{frontend_url}/login?oauth_error=Email is required from Google")
+        
+        logger.info(f"OAuth callback: Got user info for {email}")
+        
+        # Check if patient exists, if not create one
+        db_session = get_db_session()
+        result = db_session.execute(select(Patient).where(Patient.email == email))
+        patient = result.scalar_one_or_none()
+        
+        if not patient:
+            # Auto-create patient from OAuth info
+            logger.info(f"Creating new patient from OAuth: {email}")
+            patient = Patient(
+                email=email,
+                name=name,
+                active=True
+            )
+            try:
+                db_session.add(patient)
+                db_session.commit()
+                logger.info(f"New patient created via OAuth: {email} (ID: {patient.patient_id})")
+            except Exception as e:
+                db_session.rollback()
+                logger.error(f"Error creating patient: {str(e)}", exc_info=True)
+                return redirect(f"{frontend_url}/login?oauth_error=Failed to create patient account")
+        else:
+            logger.info(f"Patient already exists: {email}")
+        
+        # CRITICAL: Verify patient object is valid before using it
+        if patient is None:
+            logger.error("Patient is None after creation/lookup - critical error")
+            return redirect(f"{frontend_url}/login?oauth_error=Failed to process patient account")
+        
+        if not hasattr(patient, 'patient_id') or not patient.patient_id:
+            logger.error(f"Patient missing patient_id: {patient}")
+            return redirect(f"{frontend_url}/login?oauth_error=Invalid patient data")
+        
+        # Generate JWT token
+        jwt_token = AuthService.generate_token(patient.patient_id)
+        if not jwt_token:
+            logger.error("Failed to generate JWT token")
+            return redirect(f"{frontend_url}/login?oauth_error=Failed to generate authentication token")
+        
+        logger.info(f"Patient {patient.patient_id} ({patient.email}) authenticated via OAuth")
+        
+        # Redirect to frontend with token and user data (URL query params)
+        # Frontend will extract these and store in localStorage
+        return redirect(
+            f"{frontend_url}/dashboard?"
+            f"token={jwt_token}&"
+            f"patient_id={patient.patient_id}&"
+            f"email={email}&"
+            f"name={name}&"
+            f"oauth=true"
+        )
+    
+    except Exception as e:
+        logger.error(f"Error during OAuth callback: {str(e)}", exc_info=True)
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        return redirect(f"{frontend_url}/login?oauth_error=Server error during authentication")
+
