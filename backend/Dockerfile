@@ -1,22 +1,29 @@
 # Multi-stage build for CareSyncVision Backend
-FROM python:3.11-slim
 
-# Set working directory
+# Build stage: install build tools and compile Python dependencies
+FROM python:3.11-slim AS builder
+
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    git \
-    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Runtime stage: lean image without build tools
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Only install lightweight runtime dependencies
+RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better Docker layer caching
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy compiled Python packages from builder
+COPY --from=builder /install /usr/local
 
 # Copy application code
 COPY . .
