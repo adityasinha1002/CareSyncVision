@@ -58,6 +58,16 @@ export const useAuthStore = create((set) => ({
     set({ user: null, token: null, isAuthenticated: false, error: null });
   },
   
+  setAuth: ({ user, token }) => {
+    set({ 
+      user, 
+      token, 
+      isAuthenticated: true,
+      loading: false,
+      error: null
+    });
+  },
+  
   setUser: (user) => set({ user }),
   setError: (error) => set({ error }),
   setLoading: (loading) => set({ loading }),

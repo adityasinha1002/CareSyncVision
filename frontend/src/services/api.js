@@ -58,6 +58,10 @@ export const authService = {
   
   logout: () =>
     api.post('/auth/logout'),
+
+  // OAuth methods
+  getOAuthAuthorizationUrl: () =>
+    api.post('/auth/oauth/start'),
   
   setToken: (token) => {
     localStorage.setItem('jwtToken', token);
