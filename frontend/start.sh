@@ -7,7 +7,7 @@ server {
         try_files \$uri \$uri/ /index.html;
     }
     location /api {
-        proxy_pass http://CareSyncVision.railway.internal:5000;
+        proxy_pass http://caresyncvision.railway.internal:8080;
     }
 }
 EOF
