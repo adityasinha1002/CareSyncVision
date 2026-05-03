@@ -6,13 +6,12 @@
     "buildContext": "backend"
   },
   "deploy": {
-    "numReplicas": 1,
-    "startCommand": "gunicorn main:app"
+    "numReplicas": 1
   },
   "networking": {
     "serviceDomains": {
       "caresyncvision.up.railway.app": {
-        "port": 8080
+        "port": 5000
       }
     }
   }
