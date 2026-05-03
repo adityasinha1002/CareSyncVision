@@ -44,7 +44,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Run with gunicorn (entry point controlled by Procfile on Railway)
-# Use PORT environment variable if set, otherwise default to 5000
+# Port hardcoded to 5000 to prevent Railway's injected PORT variable from overriding
 # Using 1 worker to avoid SQLAlchemy multiprocessing binding issues
 # Flask-SQLAlchemy isn't designed for process forking
-CMD exec gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app
+CMD exec gunicorn --bind 0.0.0.0:5000 --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app
