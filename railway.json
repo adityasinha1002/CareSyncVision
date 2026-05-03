@@ -8,5 +8,12 @@
   "deploy": {
     "numReplicas": 1,
     "startCommand": "gunicorn main:app"
+  },
+  "networking": {
+    "serviceDomains": {
+      "caresyncvision.up.railway.app": {
+        "port": 8080
+      }
+    }
   }
 }
