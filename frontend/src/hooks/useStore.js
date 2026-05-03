@@ -1,47 +1,49 @@
 import { create } from 'zustand';
 import { authService } from '../services/api';
 
-export const useAuthStore = create((set) => ({
+export const useAuthStore = create((set, get) => ({
   user: null,
   token: null,
   isAuthenticated: false,
   loading: false,
   error: null,
-  
+  aiEnabled: localStorage.getItem('aiEnabled') === 'true',
+
   // Initialize auth state from localStorage
   initialize: () => {
     const token = localStorage.getItem('jwtToken');
     const patientId = localStorage.getItem('patientId');
     const email = localStorage.getItem('email');
     const name = localStorage.getItem('name');
+    const aiEnabled = localStorage.getItem('aiEnabled') === 'true';
     if (token && patientId) {
-      set({ 
-        token, 
-        user: { patient_id: patientId, email, name }, 
-        isAuthenticated: true 
+      set({
+        token,
+        user: { patient_id: patientId, email, name },
+        isAuthenticated: true,
+        aiEnabled,
       });
     }
   },
-  
+
   login: async (email, password) => {
     set({ loading: true, error: null });
     try {
       const response = await authService.login(email, password);
       const { token, patient_id, name } = response.data;
-      
-      // Store token and user info
+
       authService.setToken(token);
       localStorage.setItem('patientId', patient_id);
       localStorage.setItem('email', email);
       localStorage.setItem('name', name);
-      
-      set({ 
-        token, 
+
+      set({
+        token,
         user: { patient_id, email, name },
         isAuthenticated: true,
-        loading: false 
+        loading: false,
       });
-      
+
       return { success: true };
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Login failed';
@@ -49,7 +51,7 @@ export const useAuthStore = create((set) => ({
       return { success: false, error: errorMsg };
     }
   },
-  
+
   logout: () => {
     authService.clearToken();
     localStorage.removeItem('patientId');
@@ -57,17 +59,22 @@ export const useAuthStore = create((set) => ({
     localStorage.removeItem('name');
     set({ user: null, token: null, isAuthenticated: false, error: null });
   },
-  
+
   setAuth: ({ user, token }) => {
-    set({ 
-      user, 
-      token, 
+    set({
+      user,
+      token,
       isAuthenticated: true,
       loading: false,
-      error: null
+      error: null,
     });
   },
-  
+
+  setAiEnabled: (enabled) => {
+    localStorage.setItem('aiEnabled', String(enabled));
+    set({ aiEnabled: enabled });
+  },
+
   setUser: (user) => set({ user }),
   setError: (error) => set({ error }),
   setLoading: (loading) => set({ loading }),
@@ -78,7 +85,7 @@ export const usePatientStore = create((set) => ({
   currentPatient: null,
   loading: false,
   error: null,
-  
+
   setPatients: (patients) => set({ patients }),
   setCurrentPatient: (patient) => set({ currentPatient: patient }),
   setLoading: (loading) => set({ loading }),
@@ -88,14 +95,14 @@ export const usePatientStore = create((set) => ({
 export const useAlertStore = create((set) => ({
   alerts: [],
   unreadCount: 0,
-  
+
   addAlert: (alert) => set((state) => ({
     alerts: [alert, ...state.alerts],
     unreadCount: state.unreadCount + 1,
   })),
-  
+
   clearAlerts: () => set({ alerts: [], unreadCount: 0 }),
-  
+
   markAsRead: (alertId) => set((state) => ({
     alerts: state.alerts.map((a) =>
       a.alert_id === alertId ? { ...a, read: true } : a

@@ -5,10 +5,11 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { HealthInput } from './pages/HealthInput';
+import { OAuthCallback } from './pages/OAuthCallback';
 
 function AppContent() {
   const { isAuthenticated, initialize, setAuth } = useAuthStore();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   // Initialize authentication state from localStorage and URL params
   useEffect(() => {
@@ -21,15 +22,14 @@ function AppContent() {
 
     if (token && patientId && isOAuth) {
       // OAuth redirect - store token and user data
-      console.log('Processing OAuth redirect with token');
       localStorage.setItem('jwtToken', token);
       localStorage.setItem('patientId', patientId);
       localStorage.setItem('email', email);
       localStorage.setItem('name', name);
-      
+
       setAuth({
         user: { patient_id: patientId, email, name },
-        token
+        token,
       });
 
       // Clean up URL params
@@ -58,7 +58,8 @@ function AppContent() {
         path="/health-input"
         element={isAuthenticated ? <HealthInput /> : <Navigate to="/login" />}
       />
-      <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
+      <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />} />
     </Routes>
   );
 }

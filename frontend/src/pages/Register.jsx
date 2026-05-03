@@ -144,39 +144,35 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center p-4">
-      {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo & Header */}
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#f8fafc' }}>
+      <div className="w-full max-w-md">
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-3 rounded-full">
+            <div className="p-3 rounded-2xl" style={{ background: '#9f1211' }}>
               <Heart className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">
-            CareSyncVision
-          </h1>
-          <p className="text-gray-600 mt-2 font-light">Create Your Account</p>
+          <h1 className="text-3xl font-bold" style={{ color: '#9f1211' }}>CareSyncVision</h1>
+          <p className="text-gray-500 mt-1 text-sm">Create your account</p>
         </div>
 
         {/* Card */}
-        <div className="card backdrop-blur-md bg-white/95 border-gray-200">
+        <div className="card">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700 text-sm">{error}</p>
+              <div className="p-3 rounded-lg border-l-4 flex items-start gap-3 text-sm"
+                style={{ background: '#fff1f1', borderColor: '#9f1211', color: '#7d0f0e' }}>
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <p>{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-green-700 text-sm">{success}</p>
+              <div className="p-3 rounded-lg border-l-4 flex items-start gap-3 text-sm"
+                style={{ background: '#f0fdf4', borderColor: '#16a34a', color: '#166534' }}>
+                <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <p>{success}</p>
               </div>
             )}
 
@@ -219,6 +215,7 @@ export const Register = () => {
                 className="input-field"
                 placeholder="you@example.com"
                 disabled={loading}
+                autoComplete="email"
               />
             </div>
 
@@ -240,10 +237,25 @@ export const Register = () => {
                 className="input-field"
                 placeholder="••••••••"
                 disabled={loading}
+                autoComplete="new-password"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Min. 8 characters with uppercase, lowercase, and numbers
-              </p>
+              <div className="flex gap-1 mt-1.5">
+                {['weak', 'medium', 'strong'].map((level, i) => (
+                  <div
+                    key={level}
+                    className="h-1 flex-1 rounded-full transition-colors"
+                    style={{
+                      background: passwordStrength === 'strong'
+                        ? '#16a34a'
+                        : passwordStrength === 'medium' && i < 2
+                          ? '#d97706'
+                          : passwordStrength === 'weak' && i === 0
+                            ? '#9f1211'
+                            : '#e5e7eb'
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Confirm Password */}
@@ -257,31 +269,53 @@ export const Register = () => {
                 className="input-field"
                 placeholder="••••••••"
                 disabled={loading}
+                autoComplete="new-password"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !formData.email || !formData.password}
-              className="btn-primary w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="btn-primary w-full py-3 text-sm"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Creating Account...
+                </span>
+              ) : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-4 text-center text-gray-600 text-sm">
-            <p>Already have an account? <button onClick={() => navigate('/login')} className="text-primary-600 font-semibold hover:underline">Sign in</button></p>
+          <div className="mt-4 text-center text-sm text-gray-500">
+            Already have an account?{' '}
+            <button
+              onClick={() => navigate('/login')}
+              className="font-semibold hover:underline"
+              style={{ color: '#9f1211' }}
+            >
+              Sign in
+            </button>
           </div>
         </div>
 
         {/* Requirements */}
-        <div className="mt-6 card bg-blue-50 border-blue-200">
-          <p className="text-sm font-semibold text-blue-900 mb-3">Password Requirements:</p>
-          <ul className="space-y-2 text-xs text-blue-800">
-            <li className={formData.password.length >= 8 ? 'text-green-600' : ''}>✓ At least 8 characters</li>
-            <li className={/[A-Z]/.test(formData.password) ? 'text-green-600' : ''}>✓ One uppercase letter</li>
-            <li className={/[a-z]/.test(formData.password) ? 'text-green-600' : ''}>✓ One lowercase letter</li>
-            <li className={/\d/.test(formData.password) ? 'text-green-600' : ''}>✓ One number</li>
+        <div className="mt-5 p-4 rounded-xl border text-sm"
+          style={{ borderColor: '#fca5a5', background: '#fff1f1' }}>
+          <p className="font-semibold mb-2" style={{ color: '#9f1211' }}>Password Requirements:</p>
+          <ul className="space-y-1 text-xs" style={{ color: '#7d0f0e' }}>
+            <li className={formData.password.length >= 8 ? 'text-green-600' : ''}>
+              {formData.password.length >= 8 ? '✓' : '○'} At least 8 characters
+            </li>
+            <li className={/[A-Z]/.test(formData.password) ? 'text-green-600' : ''}>
+              {/[A-Z]/.test(formData.password) ? '✓' : '○'} One uppercase letter
+            </li>
+            <li className={/[a-z]/.test(formData.password) ? 'text-green-600' : ''}>
+              {/[a-z]/.test(formData.password) ? '✓' : '○'} One lowercase letter
+            </li>
+            <li className={/\d/.test(formData.password) ? 'text-green-600' : ''}>
+              {/\d/.test(formData.password) ? '✓' : '○'} One number
+            </li>
           </ul>
         </div>
       </div>

@@ -1,40 +1,63 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Home, Heart, Pill } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Activity, Pill, LogOut, Heart } from 'lucide-react';
 
-const iconMap = {
-  Dashboard: Home,
-  'Health Analysis': Heart,
-  Medications: Pill,
-};
+const navItems = [
+  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { label: 'Record Vitals', path: '/health-input', icon: Activity },
+  { label: 'Medications', path: '/medications', icon: Pill },
+];
 
-export default function Sidebar({ items }) {
+export default function Sidebar({ onLogout }) {
+  const location = useLocation();
+
   return (
-    <aside className="hidden md:block w-64 bg-white border-r border-gray-200 shadow-soft">
-      <nav className="p-6 space-y-2">
-        {items?.map((item, index) => {
-          const Icon = iconMap[item.label] || Home;
+    <aside
+      className="hidden md:flex flex-col w-64 min-h-screen py-6 px-4"
+      style={{ background: '#ffffff', borderRight: '1px solid #f1f5f9' }}
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-3 mb-8">
+        <div className="p-2 rounded-lg" style={{ background: '#9f1211' }}>
+          <Heart className="w-5 h-5 text-white" />
+        </div>
+        <span className="text-lg font-bold" style={{ color: '#9f1211' }}>CareSyncVision</span>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 space-y-1">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
           return (
-            return (
-              <aside className="bg-white shadow h-full w-64 flex flex-col p-6 border-r border-primary">
-                <div className="flex items-center gap-2 mb-8">
-                  <img src="/logo192.png" alt="CareSyncVision" className="w-8 h-8" />
-                  <span className="text-xl font-bold text-primary">CareSyncVision</span>
-                </div>
-                <nav className="flex-1">
-                  <ul className="space-y-4">
-                    {links.map((link) => (
-                      <li key={link.label}>
-                        <a
-                          href={link.href}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 text-primary font-semibold transition"
-                        >
-                          {link.icon}
-                          {link.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </aside>
-            );
+            <Link
+              key={item.path}
+              to={item.path}
+              className="nav-link"
+              style={isActive ? {
+                background: '#fff1f1',
+                color: '#9f1211',
+                fontWeight: 600,
+              } : {}}
+            >
+              <Icon className="w-4 h-4 flex-shrink-0" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Logout */}
+      {onLogout && (
+        <button
+          onClick={onLogout}
+          className="nav-link mt-4 w-full text-left"
+          style={{ color: '#6b7280' }}
+        >
+          <LogOut className="w-4 h-4 flex-shrink-0" />
+          Sign Out
+        </button>
+      )}
+    </aside>
+  );
+}

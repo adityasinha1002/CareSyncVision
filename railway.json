@@ -2,10 +2,11 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "dockerfile",
-    "dockerfilePath": "backend/Dockerfile"
+    "dockerfilePath": "backend/Dockerfile",
+    "buildContext": "backend"
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "gunicorn main:app"
+    "startCommand": "gunicorn wsgi:app"
   }
 }
