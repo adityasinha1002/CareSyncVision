@@ -213,10 +213,8 @@ export const Login = () => {
             <button
               type="button"
               onClick={handleDemoLogin}
-              className="w-full py-2 rounded-lg text-xs font-semibold border transition-colors"
+              className="demo-fill-btn w-full py-2 rounded-lg text-xs font-semibold border transition-colors"
               style={{ borderColor: '#9f1211', color: '#9f1211', background: 'white' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#9f1211'; e.currentTarget.style.color = 'white'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#9f1211'; }}
             >
               Fill Demo Credentials
             </button>

@@ -39,10 +39,8 @@ export default function Hero() {
 
         <button
           onClick={() => navigate('/dashboard')}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all"
+          className="go-to-dashboard-btn inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-colors"
           style={{ background: 'white', color: '#9f1211' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#fff1f1'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
         >
           Go to Dashboard
           <ArrowRight className="w-4 h-4" />

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://caresynvision-api-production.up.railway.app/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://caresyncvision-api-production.up.railway.app/api';
 
 export function useAI() {
   const [loading, setLoading] = useState(false);

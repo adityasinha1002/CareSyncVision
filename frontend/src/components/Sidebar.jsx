@@ -33,12 +33,7 @@ export default function Sidebar({ onLogout }) {
             <Link
               key={item.path}
               to={item.path}
-              className="nav-link"
-              style={isActive ? {
-                background: '#fff1f1',
-                color: '#9f1211',
-                fontWeight: 600,
-              } : {}}
+              className={`nav-link${isActive ? ' active' : ''}`}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
               {item.label}

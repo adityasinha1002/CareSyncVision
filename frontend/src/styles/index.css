@@ -206,6 +206,16 @@
   .badge-yellow { background-color: #fefce8; color: #854d0e; }
   .badge-blue { background-color: #eff6ff; color: #1d4ed8; }
 
+  /* ── Custom button hover states ── */
+  .demo-fill-btn:hover {
+    background-color: #9f1211 !important;
+    color: white !important;
+  }
+
+  .go-to-dashboard-btn:hover {
+    background-color: #fff1f1 !important;
+  }
+
   /* ── Toggle ── */
   .toggle-track {
     position: relative;

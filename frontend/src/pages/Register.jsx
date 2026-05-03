@@ -19,6 +19,14 @@ export const Register = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
 
+  // Returns the bar colour for the password-strength indicator at position i (0,1,2)
+  const getStrengthBarColor = (strength, index) => {
+    if (strength === 'strong') return '#16a34a';
+    if (strength === 'medium' && index < 2) return '#d97706';
+    if (strength === 'weak' && index === 0) return '#9f1211';
+    return '#e5e7eb';
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
@@ -244,15 +252,7 @@ export const Register = () => {
                   <div
                     key={level}
                     className="h-1 flex-1 rounded-full transition-colors"
-                    style={{
-                      background: passwordStrength === 'strong'
-                        ? '#16a34a'
-                        : passwordStrength === 'medium' && i < 2
-                          ? '#d97706'
-                          : passwordStrength === 'weak' && i === 0
-                            ? '#9f1211'
-                            : '#e5e7eb'
-                    }}
+                    style={{ background: getStrengthBarColor(passwordStrength, i) }}
                   />
                 ))}
               </div>
