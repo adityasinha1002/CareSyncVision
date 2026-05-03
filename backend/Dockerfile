@@ -34,17 +34,17 @@ RUN mkdir -p uploads logs
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=production
-ENV PORT=5000
+ENV PORT=8080
 
 # Expose Flask port
-EXPOSE 5000
+EXPOSE 8080
 
 # Health check - test the API health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/api/health || exit 1
+    CMD curl -f http://localhost:8080/api/health || exit 1
 
 # Run with gunicorn (entry point controlled by Procfile on Railway)
-# Use PORT environment variable if set, otherwise default to 5000
+# Use PORT environment variable if set, otherwise default to 8080
 # Using 1 worker to avoid SQLAlchemy multiprocessing binding issues
 # Flask-SQLAlchemy isn't designed for process forking
-CMD exec gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app
+CMD exec gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app
