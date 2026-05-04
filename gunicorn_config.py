@@ -15,7 +15,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # Gunicorn config
-bind = f"0.0.0.0:{os.environ.get('PORT', 8080)}"
+bind = f"0.0.0.0:{os.environ.get('PORT', 5000)}"
 workers = 2
 worker_class = "sync"
 timeout = 120

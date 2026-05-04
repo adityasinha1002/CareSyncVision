@@ -2,10 +2,17 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "dockerfile",
-    "dockerfilePath": "backend/Dockerfile"
+    "dockerfilePath": "backend/Dockerfile",
+    "buildContext": "backend"
   },
   "deploy": {
-    "numReplicas": 1,
-    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app"
+    "numReplicas": 1
+  },
+  "networking": {
+    "serviceDomains": {
+      "caresyncvision.up.railway.app": {
+        "port": 5000
+      }
+    }
   }
 }
