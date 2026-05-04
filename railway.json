@@ -6,6 +6,6 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "gunicorn main:app"
+    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app"
   }
 }
