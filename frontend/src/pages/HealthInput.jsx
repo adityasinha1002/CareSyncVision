@@ -227,58 +227,56 @@ export const HealthInput = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8" style={{ background: '#f8fafc' }}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4 font-medium"
+            className="flex items-center gap-2 text-sm font-medium mb-4 transition-colors"
+            style={{ color: '#9f1211' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#7d0f0e'}
+            onMouseLeave={e => e.currentTarget.style.color = '#9f1211'}
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-8 h-8 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Activity className="w-7 h-7" style={{ color: '#9f1211' }} />
             Record Vital Signs
           </h1>
-          <p className="text-gray-600 mt-2">
-            Enter your health measurements for today. This data helps monitor your health status.
+          <p className="text-gray-500 mt-1 text-sm">
+            Enter your health measurements. This data helps monitor your health status.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Section */}
+          {/* Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              {/* Success Message */}
+            <div className="card">
               {submitted && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+                <div className="mb-5 p-4 rounded-lg border-l-4 flex items-start gap-3"
+                  style={{ background: '#f0fdf4', borderColor: '#16a34a' }}>
                   <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-green-800 font-medium">Vital signs recorded successfully!</p>
-                    <p className="text-green-700 text-sm">Your data has been saved to your health history.</p>
+                    <p className="text-green-800 font-medium text-sm">Vital signs recorded!</p>
+                    <p className="text-green-700 text-xs">Your data has been saved to your health history.</p>
                   </div>
                 </div>
               )}
 
-              {/* Error Message */}
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-red-800 font-medium">Error</p>
-                    <p className="text-red-700 text-sm">{error}</p>
-                  </div>
+                <div className="mb-5 p-4 rounded-lg border-l-4 flex items-start gap-3"
+                  style={{ background: '#fff1f1', borderColor: '#9f1211' }}>
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#9f1211' }} />
+                  <p className="text-sm" style={{ color: '#7d0f0e' }}>{error}</p>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Heart Rate */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Heart Rate (BPM) *
-                  </label>
+                  <label className="label">Heart Rate (BPM) *</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -286,75 +284,51 @@ export const HealthInput = () => {
                       value={formData.heart_rate}
                       onChange={handleInputChange}
                       placeholder="72"
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        formData.heart_rate && getVitalStatus('heart_rate', formData.heart_rate) === 'error'
-                          ? 'border-red-500'
-                          : 'border-gray-300'
-                      }`}
-                      min="30"
-                      max="200"
-                      step="1"
+                      className="input-field pr-10"
+                      min="30" max="200" step="1"
                     />
                     {formData.heart_rate && (
-                      <span className={`absolute right-3 top-3 ${getStatusColor(getVitalStatus('heart_rate', formData.heart_rate))}`}>
-                        <TrendingUp className="w-5 h-5" />
+                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 ${getStatusColor(getVitalStatus('heart_rate', formData.heart_rate))}`}>
+                        <TrendingUp className="w-4 h-4" />
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Normal range: 60-100 BPM</p>
+                  <p className="text-xs text-gray-400 mt-1">Normal range: 60–100 BPM</p>
                 </div>
 
                 {/* Blood Pressure */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Systolic BP (mmHg) *
-                    </label>
+                    <label className="label">Systolic BP (mmHg) *</label>
                     <input
                       type="number"
                       name="systolic_bp"
                       value={formData.systolic_bp}
                       onChange={handleInputChange}
                       placeholder="120"
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        formData.systolic_bp && getVitalStatus('systolic_bp', formData.systolic_bp) === 'error'
-                          ? 'border-red-500'
-                          : 'border-gray-300'
-                      }`}
-                      min="50"
-                      max="250"
-                      step="1"
+                      className="input-field"
+                      min="50" max="250" step="1"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Normal: 90-120</p>
+                    <p className="text-xs text-gray-400 mt-1">Normal: 90–120</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Diastolic BP (mmHg) *
-                    </label>
+                    <label className="label">Diastolic BP (mmHg) *</label>
                     <input
                       type="number"
                       name="diastolic_bp"
                       value={formData.diastolic_bp}
                       onChange={handleInputChange}
                       placeholder="80"
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        formData.diastolic_bp && getVitalStatus('diastolic_bp', formData.diastolic_bp) === 'error'
-                          ? 'border-red-500'
-                          : 'border-gray-300'
-                      }`}
-                      min="30"
-                      max="150"
-                      step="1"
+                      className="input-field"
+                      min="30" max="150" step="1"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Normal: 60-80</p>
+                    <p className="text-xs text-gray-400 mt-1">Normal: 60–80</p>
                   </div>
                 </div>
 
                 {/* Temperature */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Temperature (°F) *
-                  </label>
+                  <label className="label">Temperature (°F) *</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -362,29 +336,21 @@ export const HealthInput = () => {
                       value={formData.temperature}
                       onChange={handleInputChange}
                       placeholder="98.6"
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        formData.temperature && getVitalStatus('temperature', formData.temperature) === 'error'
-                          ? 'border-red-500'
-                          : 'border-gray-300'
-                      }`}
-                      min="95"
-                      max="106"
-                      step="0.1"
+                      className="input-field pr-10"
+                      min="95" max="106" step="0.1"
                     />
                     {formData.temperature && (
-                      <span className={`absolute right-3 top-3 ${getStatusColor(getVitalStatus('temperature', formData.temperature))}`}>
-                        <Thermometer className="w-5 h-5" />
+                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 ${getStatusColor(getVitalStatus('temperature', formData.temperature))}`}>
+                        <Thermometer className="w-4 h-4" />
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Normal range: 97.5-99.5°F</p>
+                  <p className="text-xs text-gray-400 mt-1">Normal range: 97.5–99.5°F</p>
                 </div>
 
                 {/* Weight */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight (lbs) *
-                  </label>
+                  <label className="label">Weight (lbs) *</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -392,103 +358,80 @@ export const HealthInput = () => {
                       value={formData.weight}
                       onChange={handleInputChange}
                       placeholder="175"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      min="50"
-                      max="500"
-                      step="0.1"
+                      className="input-field pr-10"
+                      min="50" max="500" step="0.1"
                     />
                     {formData.weight && (
-                      <span className="absolute right-3 top-3 text-gray-600">
-                        <Weight className="w-5 h-5" />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <Weight className="w-4 h-4" />
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Range: 50-500 lbs</p>
+                  <p className="text-xs text-gray-400 mt-1">Range: 50–500 lbs</p>
                 </div>
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Notes (Optional)
-                  </label>
+                  <label className="label">Notes (Optional)</label>
                   <textarea
                     name="notes"
                     value={formData.notes}
                     onChange={handleInputChange}
                     placeholder="e.g., Felt dizzy this morning, took medication at 8am"
                     rows="3"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="input-field resize-none"
                     maxLength="500"
                   />
-                  <p className="text-xs text-gray-500 mt-1">{formData.notes.length}/500 characters</p>
+                  <p className="text-xs text-gray-400 mt-1">{formData.notes.length}/500</p>
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors font-medium flex items-center justify-center gap-2"
+                  className="btn-primary w-full py-3 text-sm"
                 >
                   {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Saving...
-                    </>
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      Saving…
+                    </span>
                   ) : (
-                    <>
+                    <span className="flex items-center justify-center gap-2">
                       <Check className="w-4 h-4" />
                       Record Vital Signs
-                    </>
+                    </span>
                   )}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Recent Vitals Sidebar */}
-          <div>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Droplet className="w-5 h-5 text-blue-600" />
+          {/* Sidebar */}
+          <div className="space-y-4">
+            <div className="card">
+              <h2 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <Droplet className="w-4 h-4" style={{ color: '#9f1211' }} />
                 Recent Vitals
               </h2>
 
               {loadingVitals ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                  <p className="text-gray-600 text-sm">Loading...</p>
+                  <div className="h-8 w-8 rounded-full border-4 border-gray-200 border-t-red-700 animate-spin mx-auto mb-2"
+                    style={{ borderTopColor: '#9f1211' }} />
+                  <p className="text-gray-500 text-sm">Loading…</p>
                 </div>
               ) : recentVitals.length === 0 ? (
-                <p className="text-gray-500 text-sm">No vital records yet. Start by recording your first vitals above.</p>
+                <p className="text-gray-400 text-sm">No records yet. Submit your first vitals above.</p>
               ) : (
                 <div className="space-y-4">
                   {recentVitals.map((vital, index) => (
-                    <div key={vital.record_id || index} className="pb-4 border-b border-gray-200 last:border-b-0">
-                      <p className="text-xs text-gray-500 mb-2">{formatTime(vital.timestamp)}</p>
-                      <div className="space-y-1 text-sm">
-                        <p>
-                          <span className="text-gray-600">HR:</span>
-                          <span className="font-medium ml-2">{vital.data.heart_rate} BPM</span>
-                        </p>
-                        <p>
-                          <span className="text-gray-600">BP:</span>
-                          <span className="font-medium ml-2">
-                            {vital.data.systolic_bp}/{vital.data.diastolic_bp} mmHg
-                          </span>
-                        </p>
-                        <p>
-                          <span className="text-gray-600">Temp:</span>
-                          <span className="font-medium ml-2">{vital.data.temperature}°F</span>
-                        </p>
-                        <p>
-                          <span className="text-gray-600">Weight:</span>
-                          <span className="font-medium ml-2">{vital.data.weight} lbs</span>
-                        </p>
-                        {vital.data.notes && (
-                          <p className="text-gray-600 italic text-xs mt-2">
-                            "{vital.data.notes}"
-                          </p>
-                        )}
+                    <div key={vital.record_id || index} className="pb-4 border-b border-gray-100 last:border-b-0">
+                      <p className="text-xs text-gray-400 mb-1.5">{formatTime(vital.timestamp)}</p>
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <p><span className="font-medium">HR:</span> {vital.data.heart_rate} BPM</p>
+                        <p><span className="font-medium">BP:</span> {vital.data.systolic_bp}/{vital.data.diastolic_bp} mmHg</p>
+                        <p><span className="font-medium">Temp:</span> {vital.data.temperature}°F</p>
+                        <p><span className="font-medium">Weight:</span> {vital.data.weight} lbs</p>
                       </div>
                     </div>
                   ))}
@@ -496,14 +439,13 @@ export const HealthInput = () => {
               )}
             </div>
 
-            {/* Tips Card */}
-            <div className="mt-4 bg-blue-50 rounded-lg border border-blue-200 p-4">
-              <h3 className="font-medium text-blue-900 mb-2">💡 Measurement Tips</h3>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Record at the same time each day for consistency</li>
-                <li>• Rest 5 minutes before measuring blood pressure</li>
+            <div className="p-4 rounded-xl text-sm" style={{ background: '#fff1f1', border: '1px solid #fca5a5' }}>
+              <h3 className="font-semibold mb-2" style={{ color: '#9f1211' }}>💡 Measurement Tips</h3>
+              <ul className="text-xs space-y-1" style={{ color: '#7d0f0e' }}>
+                <li>• Record at the same time each day</li>
+                <li>• Rest 5 min before measuring BP</li>
                 <li>• Use a calibrated thermometer</li>
-                <li>• Weigh yourself in the morning if possible</li>
+                <li>• Weigh yourself in the morning</li>
               </ul>
             </div>
           </div>

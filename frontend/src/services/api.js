@@ -62,7 +62,17 @@ export const authService = {
   // OAuth methods
   getOAuthAuthorizationUrl: () =>
     api.post('/auth/oauth/start'),
-  
+
+  /**
+   * handleOAuthCallback – used by the frontend OAuthCallback page when the
+   * app is configured for a "frontend-first" OAuth exchange. In the current
+   * backend-side OAuth flow Google redirects directly to the backend which
+   * then sends the JWT back to the frontend via the /dashboard URL query
+   * params. This method is kept for forward-compatibility.
+   */
+  handleOAuthCallback: (code) =>
+    api.post('/auth/oauth/callback-frontend', { code }),
+
   setToken: (token) => {
     localStorage.setItem('jwtToken', token);
   },

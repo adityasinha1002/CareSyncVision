@@ -1,32 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../hooks/useStore';
-import { Heart, Chrome } from 'lucide-react';
+import { Heart, Chrome, Eye, EyeOff, Zap } from 'lucide-react';
 import { authService } from '../services/api';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const navigate = useNavigate();
   const { login, loading, error, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
+    if (isAuthenticated) navigate('/dashboard');
   }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      return;
-    }
-
+    if (!email || !password) return;
     const result = await login(email, password);
-    if (result.success) {
-      navigate('/dashboard');
-    }
+    if (result.success) navigate('/dashboard');
+  };
+
+  const handleDemoLogin = () => {
+    setEmail('demo@example.com');
+    setPassword('DemoPass123');
   };
 
   const handleGoogleSignIn = async () => {
@@ -34,14 +33,11 @@ export const Login = () => {
       setIsRedirecting(true);
       const response = await authService.getOAuthAuthorizationUrl();
       const { authorization_url } = response.data;
-      
       if (!authorization_url) {
         alert('Failed to get authorization URL. Please try again.');
         setIsRedirecting(false);
         return;
       }
-      
-      // Redirect to Google (backend will handle the callback)
       window.location.href = authorization_url;
     } catch (err) {
       console.error('Failed to start OAuth flow:', err);
@@ -51,101 +47,178 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center p-4">
-      {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div className="min-h-screen flex" style={{ background: '#f8fafc' }}>
+      {/* Left panel – brand */}
+      <div
+        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #1a0404 0%, #3d0a0a 50%, #7d0f0e 100%)' }}
+      >
+        {/* decorative circles */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10"
+          style={{ background: '#9f1211', transform: 'translate(30%, -30%)' }} />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10"
+          style={{ background: '#9f1211', transform: 'translate(-30%, 30%)' }} />
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo & Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="bg-linear-to-br from-primary-600 to-primary-700 p-3 rounded-full">
-              <Heart className="w-8 h-8 text-white" />
+        <div className="relative z-10 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.1)' }}>
+              <Heart className="w-12 h-12 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-linear-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">
-            CareSyncVision
-          </h1>
-          <p className="text-gray-600 mt-2 font-light">Intelligent Health Monitoring</p>
+          <h1 className="text-4xl font-bold text-white mb-3">CareSyncVision</h1>
+          <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Intelligent Health Monitoring Platform
+          </p>
+          <div className="grid grid-cols-1 gap-4 text-left max-w-xs mx-auto">
+            {[
+              { icon: '📊', title: 'Real-time Analytics', desc: 'Track vital signs live' },
+              { icon: '💊', title: 'Medication Tracking', desc: 'Never miss a dose' },
+              { icon: '🤖', title: 'AI Risk Assessment', desc: 'Predictive health insights' },
+            ].map((f) => (
+              <div key={f.title} className="flex items-start gap-3 p-3 rounded-xl"
+                style={{ background: 'rgba(255,255,255,0.07)' }}>
+                <span className="text-2xl">{f.icon}</span>
+                <div>
+                  <p className="text-white font-semibold text-sm">{f.title}</p>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel – form */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8">
+        {/* Mobile logo */}
+        <div className="lg:hidden flex items-center gap-3 mb-8">
+          <div className="p-2.5 rounded-xl" style={{ background: '#9f1211' }}>
+            <Heart className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold" style={{ color: '#9f1211' }}>CareSyncVision</h1>
         </div>
 
-        {/* Card */}
-        <div className="card backdrop-blur-md bg-white/95 border-gray-200">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+            <p className="text-gray-500 mt-1">Sign in to your account to continue</p>
+          </div>
+
+          <div className="card">
             {error && (
-              <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                <p className="text-red-700 font-medium">{error}</p>
+              <div className="mb-4 p-3 rounded-lg border-l-4 text-sm"
+                style={{ background: '#fff1f1', borderColor: '#9f1211', color: '#7d0f0e' }}>
+                {error}
               </div>
             )}
 
-            <div>
-              <label className="label">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
-                placeholder="you@example.com"
-                disabled={loading}
-              />
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="label">Email address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-field"
+                  placeholder="you@example.com"
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </div>
+
+              <div>
+                <label className="label">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-field pr-10"
+                    placeholder="••••••••"
+                    disabled={loading}
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className="btn-primary w-full py-3 text-sm"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Signing in...
+                  </span>
+                ) : 'Sign In'}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-white text-gray-400 font-medium">OR</span>
+              </div>
             </div>
 
-            <div>
-              <label className="label">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field"
-                placeholder="••••••••"
-                disabled={loading}
-              />
-            </div>
-
+            {/* Google */}
             <button
-              type="submit"
-              disabled={loading || !email || !password}
-              className="btn-primary w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isRedirecting || loading}
+              className="w-full py-2.5 px-4 border border-gray-200 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              <Chrome className="w-4 h-4" />
+              {isRedirecting ? 'Redirecting to Google...' : 'Continue with Google'}
             </button>
-          </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+            <div className="mt-4 text-center text-sm text-gray-500">
+              Don&apos;t have an account?{' '}
+              <button
+                onClick={() => navigate('/register')}
+                className="font-semibold hover:underline"
+                style={{ color: '#9f1211' }}
+              >
+                Create one
+              </button>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          </div>
+
+          {/* Demo account card */}
+          <div className="mt-5 p-4 rounded-xl border border-dashed"
+            style={{ borderColor: '#fca5a5', background: '#fff1f1' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4" style={{ color: '#9f1211' }} />
+              <p className="text-sm font-semibold" style={{ color: '#9f1211' }}>Quick Demo Access</p>
             </div>
+            <p className="text-xs text-gray-600 mb-3">
+              Try the platform with pre-seeded health data — no sign-up needed.
+            </p>
+            <div className="flex items-center justify-between mb-3 text-xs text-gray-600">
+              <span><strong>Email:</strong> demo@example.com</span>
+              <span><strong>Password:</strong> DemoPass123</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              className="demo-fill-btn w-full py-2 rounded-lg text-xs font-semibold border transition-colors"
+              style={{ borderColor: '#9f1211', color: '#9f1211', background: 'white' }}
+            >
+              Fill Demo Credentials
+            </button>
           </div>
-
-          {/* Google Sign In Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={isRedirecting || loading}
-            className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-          >
-            <Chrome className="w-5 h-5" />
-            {isRedirecting ? 'Redirecting to Google...' : 'Sign in with Google'}
-          </button>
-
-          <div className="mt-4 text-center text-gray-600 text-sm">
-            <p>Don't have an account? <button onClick={() => navigate('/register')} className="text-primary-600 font-semibold hover:underline">Sign up</button></p>
-          </div>
-        </div>
-
-        {/* Demo Info */}
-        <div className="mt-6 card bg-linear-to-r from-primary-50 to-primary-100 border-primary-200">
-          <p className="text-sm font-semibold text-primary-900 mb-3">Test with Demo Account:</p>
-          <div className="space-y-2 text-sm text-primary-800">
-            <p><span className="font-semibold">Email:</span> demo@example.com</p>
-            <p><span className="font-semibold">Password:</span> DemoPass123</p>
-          </div>
-          <p className="text-xs text-primary-700 mt-3">Or create a new account to get started</p>
         </div>
       </div>
     </div>
