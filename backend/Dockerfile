@@ -43,8 +43,11 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5000/api/health || exit 1
 
-# Run with gunicorn (entry point controlled by Procfile on Railway)
-# Port hardcoded to 5000 to prevent Railway's injected PORT variable from overriding
+# Run with gunicorn
+# Build context is backend/, so the WSGI entry point is wsgi.py (not main.py which lives at repo root).
+# Port is hardcoded to 5000 here; railway.json networking section tells Railway to route external
+# traffic to this port. The root Procfile (non-Docker path) uses ${PORT:-5000} instead so it can
+# honour Railway's injected PORT variable.
 # Using 1 worker to avoid SQLAlchemy multiprocessing binding issues
 # Flask-SQLAlchemy isn't designed for process forking
-CMD exec gunicorn --bind 0.0.0.0:5000 --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - main:app
+CMD exec gunicorn --bind 0.0.0.0:5000 --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - wsgi:app
