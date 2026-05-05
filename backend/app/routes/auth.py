@@ -10,8 +10,8 @@ import re
 import os
 import requests
 from sqlalchemy import select
-from backend.app.services.auth_service import AuthService
-from backend.app.models.patient_model import Patient
+from app.services.auth_service import AuthService
+from app.models.patient_model import Patient
 from .. import db
 
 logger = logging.getLogger(__name__)
