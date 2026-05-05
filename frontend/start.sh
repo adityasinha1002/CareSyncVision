@@ -7,7 +7,7 @@ server {
         try_files \$uri \$uri/ /index.html;
     }
     location /api {
-        proxy_pass http://caresyncvision.railway.internal:8080;
+        proxy_pass http://caresyncvision.railway.internal:5000;
         proxy_http_version 1.1;
         proxy_set_header Host caresyncvision.railway.internal;  # internal Railway hostname required for service discovery
         proxy_set_header X-Real-IP \$remote_addr;

@@ -444,4 +444,4 @@ if __name__ == '__main__':
     logger.info("Starting CareSyncVision AI Server...")
     logger.info(f"Upload folder: {UPLOAD_FOLDER}")
     logger.info("Patient Health Monitoring system active")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5001)), debug=os.getenv('FLASK_DEBUG', 'false').lower() == 'true')
