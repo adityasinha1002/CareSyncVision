@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # honour Railway's injected PORT variable.
 # Using 1 worker to avoid SQLAlchemy multiprocessing binding issues
 # Flask-SQLAlchemy isn't designed for process forking
-CMD exec gunicorn --bind 0.0.0.0:5000 --workers 1 --worker-class sync --timeout 120 --access-logfile - --error-logfile - wsgi:app
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--worker-class", "sync", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "wsgi:app"]
